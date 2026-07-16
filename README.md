@@ -124,9 +124,9 @@ ansible-lint
 
 ## Running Scenario-Based Playbooks
 
-The `scenarios/` directory contains standalone, self-contained playbooks for specific use cases (Nginx, Docker, PostgreSQL, Hardening, and AWS mount/logging tasks).
+The `scenarios/` directory contains standalone, self-contained playbooks for specific use cases (such as Nginx, Docker, PostgreSQL, CI/CD tools, monitoring, logging, databases, and general infrastructure tasks). **These playbooks are fully compatible and can be used to set up and practice on any Ubuntu instances (e.g. AWS EC2, local Multipass VMs, or bare metal machines).**
 
-You can execute them by specifying target hosts or running them directly on your target EC2 instance:
+You can execute them by specifying target hosts or running them directly on your target Ubuntu instance:
 
 ```bash
 # 1. Run a setup scenario against all hosts in your inventory
