@@ -1,0 +1,28 @@
+---
+- name: Storage — NFS Shared File System Client Mount
+  hosts: all
+  become: true
+  vars:
+    nfs_server_ip: "192.168.64.20"
+    nfs_share_path: "/srv/nfs/share"
+    local_mount_point: "/mnt/nfs_share"
+  tasks:
+    - name: Install NFS common tools
+      ansible.builtin.apt:
+        name: nfs-common
+        state: present
+
+    - name: Ensure local mount point exists
+      ansible.builtin.file:
+        path: "{{ local_mount_point }}"
+        state: directory
+        mode: '0755'
+
+    - name: Mount NFS shared resource
+      ansible.posix.mount:
+        path: "{{ local_mount_point }}"
+        src: "{{ nfs_server_ip }}:{{ nfs_share_path }}"
+        fstype: nfs
+        opts: rw,sync,hard
+        state: mounted
+...

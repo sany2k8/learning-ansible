@@ -1,0 +1,33 @@
+---
+- name: Database — MongoDB Community Edition Setup
+  hosts: all
+  become: true
+  tasks:
+    - name: Install prerequisites
+      ansible.builtin.apt:
+        name: [gnupg, curl]
+        state: present
+        update_cache: true
+
+    - name: Add MongoDB GPG key
+      ansible.builtin.apt_key:
+        url: https://www.mongodb.org/static/pgp/server-7.0.asc
+        state: present
+
+    - name: Add MongoDB repository
+      ansible.builtin.apt_repository:
+        repo: "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu {{ ansible_distribution_release }}/mongodb-org/7.0 multiverse"
+        state: present
+
+    - name: Install MongoDB
+      ansible.builtin.apt:
+        name: mongodb-org
+        state: present
+        update_cache: true
+
+    - name: Ensure MongoDB is running and enabled
+      ansible.builtin.service:
+        name: mongod
+        state: started
+        enabled: true
+...

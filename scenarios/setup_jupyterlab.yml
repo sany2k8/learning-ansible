@@ -1,0 +1,14 @@
+---
+- name: Development Environment — JupyterLab Analytics Sandbox via Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: Run JupyterLab container instance
+      community.docker.docker_container:
+        name: jupyterlab
+        image: jupyter/datascience-notebook:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "8888:8888"
+...

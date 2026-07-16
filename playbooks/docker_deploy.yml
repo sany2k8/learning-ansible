@@ -1,0 +1,14 @@
+---
+- name: Setup Docker and Deploy Containerized Application
+  hosts: web
+  roles:
+    - docker
+  tasks:
+    - name: Start Nginx Docker Container
+      community.docker.docker_container:
+        name: my_nginx
+        image: nginx:latest
+        state: started
+        published_ports:
+          - "8080:80"
+...

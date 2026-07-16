@@ -1,0 +1,54 @@
+---
+- name: Logging Scenario — Deploy Elastic Stack (ELK) via Docker
+  hosts: all
+  become: true
+  vars:
+    elk_elasticsearch_port: 9200
+    elk_kibana_port: 5601
+  tasks:
+    - name: Ensure Docker python library is present
+      ansible.builtin.package:
+        name: python3-docker
+        state: present
+
+    - name: Create network for ELK containers
+      community.docker.docker_network:
+        name: elk_network
+        state: present
+
+    - name: Run Elasticsearch container
+      community.docker.docker_container:
+        name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+        state: started
+        restart_policy: always
+        published_ports:
+          - "{{ elk_elasticsearch_port }}:9200"
+        env:
+          discovery.type: "single-node"
+          ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+        networks:
+          - name: elk_network
+
+    - name: Run Kibana container
+      community.docker.docker_container:
+        name: kibana
+        image: docker.elastic.co/kibana/kibana:7.17.9
+        state: started
+        restart_policy: always
+        published_ports:
+          - "{{ elk_kibana_port }}:5601"
+        env:
+          ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
+        networks:
+          - name: elk_network
+
+    - name: Allow ELK ports in firewall
+      community.general.ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop:
+        - "{{ elk_elasticsearch_port }}"
+        - "{{ elk_kibana_port }}"
+...

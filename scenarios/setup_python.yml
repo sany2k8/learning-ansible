@@ -1,0 +1,28 @@
+---
+- name: Runtime — Python Development Environment
+  hosts: all
+  become: true
+  vars:
+    python_version: "3.11"
+  tasks:
+    - name: Install Python and development tools
+      ansible.builtin.apt:
+        name:
+          - "python{{ python_version }}"
+          - "python{{ python_version }}-venv"
+          - "python{{ python_version }}-dev"
+          - python3-pip
+          - build-essential
+        state: present
+        update_cache: true
+
+    - name: Install common Python packages globally
+      ansible.builtin.pip:
+        name:
+          - virtualenv
+          - pipenv
+          - poetry
+          - black
+          - flake8
+        state: present
+...

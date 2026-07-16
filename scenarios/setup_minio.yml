@@ -1,0 +1,27 @@
+---
+- name: Storage — MinIO Standalone S3 Compatible Storage via Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: Create persistent data directory for MinIO
+      ansible.builtin.file:
+        path: /opt/minio/data
+        state: directory
+        mode: '0755'
+
+    - name: Run MinIO container instance
+      community.docker.docker_container:
+        name: minio
+        image: minio/minio:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "9000:9000"
+          - "9001:9001"
+        env:
+          MINIO_ROOT_USER: "minio_admin"
+          MINIO_ROOT_PASSWORD: "minio_secure_password_123"
+        volumes:
+          - /opt/minio/data:/data
+        command: server /data --console-address ":9001"
+...

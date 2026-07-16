@@ -1,0 +1,73 @@
+---
+- name: SSL Scenario — Generate Self-Signed Certificate and configure Nginx
+  hosts: all
+  become: true
+  vars:
+    ssl_cert_dir: "/etc/ssl/certs"
+    ssl_key_dir: "/etc/ssl/private"
+    domain_name: "app.local"
+  tasks:
+    - name: Ensure openssl package is installed
+      ansible.builtin.package:
+        name: openssl
+        state: present
+
+    - name: Generate an OpenSSL private key
+      community.crypto.openssl_privatekey:
+        path: "{{ ssl_key_dir }}/{{ domain_name }}.key"
+        size: 2048
+        type: RSA
+
+    - name: Generate an OpenSSL Certificate Signing Request (CSR)
+      community.crypto.openssl_csr:
+        path: "/tmp/{{ domain_name }}.csr"
+        privatekey_path: "{{ ssl_key_dir }}/{{ domain_name }}.key"
+        common_name: "{{ domain_name }}"
+
+    - name: Generate a Self-Signed OpenSSL certificate
+      community.crypto.x509_certificate:
+        path: "{{ ssl_cert_dir }}/{{ domain_name }}.crt"
+        privatekey_path: "{{ ssl_key_dir }}/{{ domain_name }}.key"
+        csr_path: "/tmp/{{ domain_name }}.csr"
+        provider: selfsigned
+
+    - name: Clean up temporary CSR file
+      ansible.builtin.file:
+        path: "/tmp/{{ domain_name }}.csr"
+        state: absent
+
+    - name: Deploy HTTPS Nginx server block configuration
+      ansible.builtin.copy:
+        content: |
+          server {
+              listen 443 ssl default_server;
+              server_name {{ domain_name }};
+
+              ssl_certificate {{ ssl_cert_dir }}/{{ domain_name }}.crt;
+              ssl_certificate_key {{ ssl_key_dir }}/{{ domain_name }}.key;
+
+              root /var/www/html;
+              index index.html;
+
+              location / {
+                  try_files $uri $uri/ =404;
+              }
+          }
+        dest: /etc/nginx/sites-available/{{ domain_name }}.conf
+        mode: '0644'
+      when: ansible_facts['services']['nginx'] is defined or true
+      notify: Restart Nginx
+
+    - name: Enable HTTPS Nginx server block configuration
+      ansible.builtin.file:
+        src: "/etc/nginx/sites-available/{{ domain_name }}.conf"
+        dest: "/etc/nginx/sites-enabled/{{ domain_name }}.conf"
+        state: link
+      notify: Restart Nginx
+
+  handlers:
+    - name: Restart Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+...

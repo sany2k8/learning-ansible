@@ -1,0 +1,27 @@
+---
+- name: CI/CD — Sonatype Nexus Repository Manager via Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: Create Nexus data volume
+      community.docker.docker_volume:
+        name: nexus_data
+        state: present
+
+    - name: Run Nexus container
+      community.docker.docker_container:
+        name: nexus
+        image: sonatype/nexus3:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "8081:8081"
+        volumes:
+          - nexus_data:/nexus-data
+
+    - name: Allow Nexus port in UFW
+      community.general.ufw:
+        rule: allow
+        port: "8081"
+        proto: tcp
+...

@@ -1,0 +1,6 @@
+---
+env_name: "production"
+debug_mode: false
+enable_minify: true
+# Production database connection limits, etc.
+db_max_connections: 100

@@ -1,0 +1,78 @@
+---
+- name: Monitoring Scenario — Standalone Node Exporter Setup
+  hosts: all
+  become: true
+  vars:
+    node_exporter_version: "1.7.0"
+    node_exporter_port: 9100
+  tasks:
+    - name: Ensure target download directory exists
+      ansible.builtin.file:
+        path: /tmp/node_exporter
+        state: directory
+        mode: '0755'
+
+    - name: Download Node Exporter tarball
+      ansible.builtin.get_url:
+        url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+        dest: /tmp/node_exporter.tar.gz
+        mode: '0644'
+
+    - name: Extract Node Exporter binary
+      ansible.builtin.unarchive:
+        src: /tmp/node_exporter.tar.gz
+        dest: /tmp/node_exporter
+        remote_src: true
+        extra_opts: [--strip-components=1]
+
+    - name: Move Node Exporter binary to /usr/local/bin
+      ansible.builtin.copy:
+        src: /tmp/node_exporter/node_exporter
+        dest: /usr/local/bin/node_exporter
+        mode: '0755'
+        remote_src: true
+      notify: Restart Node Exporter
+
+    - name: Deploy systemd service unit for Node Exporter
+      ansible.builtin.copy:
+        content: |
+          [Unit]
+          Description=Node Exporter Metric Scraper
+          Wants=network-online.target
+          After=network-online.target
+
+          [Service]
+          User=nobody
+          ExecStart=/usr/local/bin/node_exporter --web.listen-address=:{{ node_exporter_port }}
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+        dest: /etc/systemd/system/node_exporter.service
+        mode: '0644'
+      notify:
+        - Reload systemd
+        - Restart Node Exporter
+
+    - name: Ensure Node Exporter is enabled and running
+      ansible.builtin.service:
+        name: node_exporter
+        state: started
+        enabled: true
+
+    - name: Allow Node Exporter metrics port in UFW
+      community.general.ufw:
+        rule: allow
+        port: "{{ node_exporter_port }}"
+        proto: tcp
+
+  handlers:
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Restart Node Exporter
+      ansible.builtin.service:
+        name: node_exporter
+        state: restarted
+...

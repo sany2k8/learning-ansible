@@ -1,0 +1,13 @@
+---
+- name: Infrastructure — Sudo Access parameters setup
+  hosts: all
+  become: true
+  tasks:
+    - name: Allow sudoers to execute commands
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^%sudo'
+        line: '%sudo   ALL=(ALL:ALL) ALL'
+        validate: '/usr/sbin/visudo -cf %s'
+...

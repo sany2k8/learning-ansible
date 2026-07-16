@@ -1,0 +1,21 @@
+---
+- name: Load Testing — Grafana k6 setup
+  hosts: all
+  become: true
+  tasks:
+    - name: Add k6 apt key
+      ansible.builtin.apt_key:
+        url: https://dl.circleci.com/prov/github/releases/download/v1.0.0/public.key
+        state: present
+
+    - name: Add k6 repository
+      ansible.builtin.apt_repository:
+        repo: "deb https://dl.circleci.com/prov/github/releases/download/v1.0.0/debian/ any-version main"
+        state: present
+
+    - name: Install k6
+      ansible.builtin.apt:
+        name: k6
+        state: present
+        update_cache: true
+...

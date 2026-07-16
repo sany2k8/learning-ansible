@@ -1,0 +1,26 @@
+---
+- name: Infrastructure — Logrotate Configuration
+  hosts: all
+  become: true
+  tasks:
+    - name: Ensure logrotate is installed
+      ansible.builtin.package:
+        name: logrotate
+        state: present
+
+    - name: Deploy custom application log rotation config
+      ansible.builtin.copy:
+        content: |
+          /var/log/app/*.log {
+              daily
+              missingok
+              rotate 14
+              compress
+              delaycompress
+              notifempty
+              create 0660 www-data www-data
+              sharedscripts
+          }
+        dest: /etc/logrotate.d/app-logs
+        mode: '0644'
+...

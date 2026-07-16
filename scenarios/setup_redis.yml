@@ -1,0 +1,59 @@
+---
+- name: Cache Scenario — Standalone Redis Setup
+  hosts: all
+  become: true
+  vars:
+    redis_bind_address: "0.0.0.0"
+    redis_port: 6379
+    redis_requirepass: "secure_redis_auth_token_string"
+  tasks:
+    - name: Install Redis Server
+      ansible.builtin.apt:
+        name: redis-server
+        state: present
+        update_cache: true
+
+    - name: Configure Redis bind address
+      ansible.builtin.lineinfile:
+        path: /etc/redis/redis.conf
+        regexp: '^bind\s+.*'
+        line: "bind {{ redis_bind_address }}"
+        state: present
+      notify: Restart Redis
+
+    - name: Disable protected mode
+      ansible.builtin.lineinfile:
+        path: /etc/redis/redis.conf
+        regexp: '^protected-mode\s+.*'
+        line: "protected-mode no"
+        state: present
+      notify: Restart Redis
+
+    - name: Set Redis port
+      ansible.builtin.lineinfile:
+        path: /etc/redis/redis.conf
+        regexp: '^port\s+.*'
+        line: "port {{ redis_port }}"
+        state: present
+      notify: Restart Redis
+
+    - name: Set Redis authentication password
+      ansible.builtin.lineinfile:
+        path: /etc/redis/redis.conf
+        regexp: '^#?\s*requirepass\s+.*'
+        line: "requirepass {{ redis_requirepass }}"
+        state: present
+      notify: Restart Redis
+
+    - name: Ensure Redis service is running and enabled
+      ansible.builtin.service:
+        name: redis-server
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Restart Redis
+      ansible.builtin.service:
+        name: redis-server
+        state: restarted
+...

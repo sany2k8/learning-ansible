@@ -1,0 +1,17 @@
+---
+- name: Install Packages Based on OS
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Apache on Debian/Ubuntu systems
+      ansible.builtin.apt:
+        name: apache2
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Install Apache (httpd) on RedHat/Rocky Linux systems
+      ansible.builtin.dnf:
+        name: httpd
+        state: present
+      when: ansible_os_family == "RedHat"
+...

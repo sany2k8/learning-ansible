@@ -1,0 +1,17 @@
+---
+- name: Create System Directories
+  hosts: all
+  become: true
+  tasks:
+    - name: Create deployer application directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: deployer
+        group: deployer
+        mode: '0755'
+      loop:
+        - /var/www/my_app
+        - /var/www/my_app/shared
+        - /var/www/my_app/releases
+...

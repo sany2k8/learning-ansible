@@ -1,0 +1,40 @@
+---
+- name: Logging — Logstash Pipeline
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Logstash
+      ansible.builtin.apt:
+        name: logstash
+        state: present
+        update_cache: true
+
+    - name: Deploy basic Logstash configuration
+      ansible.builtin.copy:
+        content: |
+          input {
+            beats {
+              port => 5044
+            }
+          }
+          output {
+            elasticsearch {
+              hosts => ["http://localhost:9200"]
+            }
+          }
+        dest: /etc/logstash/conf.d/simple-pipeline.conf
+        mode: '0644'
+      notify: Restart Logstash
+
+    - name: Ensure Logstash service is running and enabled
+      ansible.builtin.service:
+        name: logstash
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Restart Logstash
+      ansible.builtin.service:
+        name: logstash
+        state: restarted
+...

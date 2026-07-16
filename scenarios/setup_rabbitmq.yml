@@ -1,0 +1,29 @@
+---
+- name: Message Queue — RabbitMQ Broker
+  hosts: all
+  become: true
+  tasks:
+    - name: Install RabbitMQ Server
+      ansible.builtin.apt:
+        name: rabbitmq-server
+        state: present
+        update_cache: true
+
+    - name: Ensure RabbitMQ is running and enabled
+      ansible.builtin.service:
+        name: rabbitmq-server
+        state: started
+        enabled: true
+
+    - name: Enable RabbitMQ Management Plugin
+      community.rabbitmq.rabbitmq_plugin:
+        names: rabbitmq_management
+        state: enabled
+      notify: Restart RabbitMQ
+
+  handlers:
+    - name: Restart RabbitMQ
+      ansible.builtin.service:
+        name: rabbitmq-server
+        state: restarted
+...

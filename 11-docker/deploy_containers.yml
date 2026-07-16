@@ -1,0 +1,50 @@
+---
+- name: Deploy Docker Containers
+  hosts: web
+  become: true
+  tasks:
+    - name: Create docker network for application stack
+      community.docker.docker_network:
+        name: app_network
+        state: present
+
+    - name: Create persistent volume for PostgreSQL
+      community.docker.docker_volume:
+        name: postgres_data
+        state: present
+
+    - name: Pull and run PostgreSQL container
+      community.docker.docker_container:
+        name: postgres_db
+        image: postgres:15
+        state: started
+        restart_policy: always
+        networks:
+          - name: app_network
+        volumes:
+          - postgres_data:/var/lib/postgresql/data
+        env:
+          POSTGRES_DB: app_db
+          POSTGRES_USER: app_user
+          POSTGRES_PASSWORD: "secret_db_password"
+
+    - name: Pull and run Redis container
+      community.docker.docker_container:
+        name: redis_cache
+        image: redis:7-alpine
+        state: started
+        restart_policy: always
+        networks:
+          - name: app_network
+
+    - name: Pull and run Nginx container
+      community.docker.docker_container:
+        name: nginx_proxy
+        image: nginx:alpine
+        state: started
+        restart_policy: always
+        published_ports:
+          - "80:80"
+        networks:
+          - name: app_network
+...

@@ -1,0 +1,6 @@
+---
+db_name: app_db
+db_user: app_user
+db_password: "fallback_mysql_password"
+mysql_bind_address: "0.0.0.0"
+mysql_max_connections: 100

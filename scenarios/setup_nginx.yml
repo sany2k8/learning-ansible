@@ -1,0 +1,62 @@
+---
+- name: Scenario — Standalone Nginx Reverse Proxy Setup
+  hosts: all
+  become: true
+  vars:
+    proxy_server_name: "app.example.com"
+    proxy_target_url: "http://127.0.0.1:8080"
+  tasks:
+    - name: Install Nginx
+      ansible.builtin.package:
+        name: nginx
+        state: present
+
+    - name: Enable UFW firewall rule for HTTP and HTTPS
+      community.general.ufw:
+        rule: allow
+        name: Nginx Full
+
+    - name: Deploy reverse proxy site configuration block
+      ansible.builtin.copy:
+        content: |
+          server {
+              listen 80;
+              server_name {{ proxy_server_name }};
+
+              location / {
+                  proxy_pass {{ proxy_target_url }};
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+              }
+          }
+        dest: "/etc/nginx/sites-available/{{ proxy_server_name }}.conf"
+        mode: '0644'
+      notify: Restart Nginx
+
+    - name: Enable site symlink configuration block
+      ansible.builtin.file:
+        src: "/etc/nginx/sites-available/{{ proxy_server_name }}.conf"
+        dest: "/etc/nginx/sites-enabled/{{ proxy_server_name }}.conf"
+        state: link
+      notify: Restart Nginx
+
+    - name: Remove default Nginx virtual host configuration
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Restart Nginx
+
+    - name: Ensure Nginx is enabled and running
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Restart Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+...

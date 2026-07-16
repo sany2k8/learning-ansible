@@ -1,0 +1,12 @@
+---
+system_timezone: "UTC"
+common_packages:
+  - curl
+  - git
+  - tmux
+  - vim
+  - htop
+  - ufw
+ntp_servers:
+  - "0.pool.ntp.org"
+  - "1.pool.ntp.org"

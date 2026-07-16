@@ -1,0 +1,10 @@
+---
+- name: Performance Testing — IO Benchmarking tool fio
+  hosts: all
+  become: true
+  tasks:
+    - name: Install fio
+      ansible.builtin.package:
+        name: fio
+        state: present
+...

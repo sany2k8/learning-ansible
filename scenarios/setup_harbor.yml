@@ -1,0 +1,11 @@
+---
+- name: Artifact Repository — Harbor Docker Registry via Docker Compose
+  hosts: all
+  become: true
+  tasks:
+    - name: Download Harbor installer package
+      ansible.builtin.get_url:
+        url: https://github.com/goharbor/harbor/releases/download/v2.10.0/harbor-offline-installer-v2.10.0.tgz
+        dest: /tmp/harbor.tgz
+        mode: '0644'
+...

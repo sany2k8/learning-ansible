@@ -1,0 +1,11 @@
+---
+users_enable_sudo_nopasswd: true
+users_list:
+  - name: deployer
+    groups: admin
+    shell: /bin/bash
+    ssh_key: ""
+  - name: developer1
+    groups: developer
+    shell: /bin/bash
+    ssh_key: ""

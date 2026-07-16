@@ -1,0 +1,17 @@
+---
+- name: Message Queue — ZooKeeper Server
+  hosts: all
+  become: true
+  tasks:
+    - name: Install ZooKeeper
+      ansible.builtin.apt:
+        name: zookeeperd
+        state: present
+        update_cache: true
+
+    - name: Ensure ZooKeeper service is running and enabled
+      ansible.builtin.service:
+        name: zookeeper
+        state: started
+        enabled: true
+...

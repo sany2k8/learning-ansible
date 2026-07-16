@@ -1,0 +1,30 @@
+---
+- name: Cache — Varnish HTTP Cache Accelerator
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Varnish
+      ansible.builtin.apt:
+        name: varnish
+        state: present
+        update_cache: true
+
+    - name: Configure Varnish port
+      ansible.builtin.lineinfile:
+        path: /etc/default/varnish
+        regexp: '^DAEMON_OPTS=.*-a :6081.*'
+        line: 'DAEMON_OPTS="-a :80 -T localhost:6082 -f /etc/varnish/default.vcl -s malloc,256m"'
+      notify: Restart Varnish
+
+    - name: Ensure Varnish service is running and enabled
+      ansible.builtin.service:
+        name: varnish
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Restart Varnish
+      ansible.builtin.service:
+        name: varnish
+        state: restarted
+...

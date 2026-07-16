@@ -1,0 +1,38 @@
+---
+- name: SSL Scenario — Certbot Let's Encrypt Setup
+  hosts: all
+  become: true
+  vars:
+    certbot_email: "admin@example.com"
+    certbot_domains:
+      - "app.example.com"
+  tasks:
+    - name: Install snapd dependency
+      ansible.builtin.package:
+        name: snapd
+        state: present
+
+    - name: Ensure snap core is installed
+      ansible.builtin.command: snap install core
+      register: snap_core_out
+      failed_when: false
+      changed_when: "'already installed' not in snap_core_out.stderr"
+
+    - name: Install Certbot via Snap
+      ansible.builtin.command: snap install --classic certbot
+      register: snap_certbot_out
+      failed_when: false
+      changed_when: "'already installed' not in snap_certbot_out.stderr"
+
+    - name: Link certbot binary to standard path
+      ansible.builtin.file:
+        src: /snap/bin/certbot
+        dest: /usr/bin/certbot
+        state: link
+
+    - name: Set up automated renewal timer via systemd
+      ansible.builtin.service:
+        name: snap.certbot.renew.timer
+        state: started
+        enabled: true
+...

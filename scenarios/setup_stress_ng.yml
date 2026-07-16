@@ -1,0 +1,10 @@
+---
+- name: Performance Testing — Stress testing tool stress-ng
+  hosts: all
+  become: true
+  tasks:
+    - name: Install stress-ng
+      ansible.builtin.package:
+        name: stress-ng
+        state: present
+...

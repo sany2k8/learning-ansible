@@ -1,0 +1,16 @@
+---
+- name: Install Nginx on Web Servers
+  hosts: web
+  become: true
+  tasks:
+    - name: Ensure Nginx package is present
+      ansible.builtin.package:
+        name: nginx
+        state: present
+
+    - name: Ensure Nginx service is started and enabled
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+...

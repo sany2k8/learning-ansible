@@ -1,0 +1,10 @@
+---
+- name: Utilities — System stats visualizers (htop, iotop)
+  hosts: all
+  become: true
+  tasks:
+    - name: Install tools
+      ansible.builtin.package:
+        name: [htop, iotop]
+        state: present
+...

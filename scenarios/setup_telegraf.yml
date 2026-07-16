@@ -1,0 +1,11 @@
+---
+- name: Monitoring — Telegraf Metrics Collector Agent
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Telegraf
+      ansible.builtin.apt:
+        name: telegraf
+        state: present
+        update_cache: true
+...

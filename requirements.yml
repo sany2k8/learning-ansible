@@ -1,0 +1,6 @@
+---
+collections:
+  - name: community.docker
+  - name: kubernetes.core
+  - name: community.aws
+  - name: community.general

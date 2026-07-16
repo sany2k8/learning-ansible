@@ -1,0 +1,14 @@
+---
+- name: Development Environment — OpenVSCode Server configuration
+  hosts: all
+  become: true
+  tasks:
+    - name: Run OpenVSCode Server container
+      community.docker.docker_container:
+        name: openvscode-server
+        image: gitpod/openvscode-server:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "3000:3000"
+...

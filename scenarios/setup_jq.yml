@@ -1,0 +1,10 @@
+---
+- name: Utilities — JSON Parser jq configuration
+  hosts: all
+  become: true
+  tasks:
+    - name: Install jq
+      ansible.builtin.package:
+        name: jq
+        state: present
+...

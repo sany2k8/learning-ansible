@@ -1,0 +1,47 @@
+---
+- name: Scenario — Install HashiCorp Tools (Terraform, Packer, Vault)
+  hosts: all
+  become: true
+  tasks:
+    - name: Install gnupg and software-properties-common
+      ansible.builtin.apt:
+        name:
+          - gnupg
+          - software-properties-common
+          - curl
+        state: present
+        update_cache: true
+
+    - name: Add HashiCorp GPG key
+      ansible.builtin.apt_key:
+        url: https://apt.releases.hashicorp.com/gpg
+        state: present
+
+    - name: Add HashiCorp official repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
+        state: present
+
+    - name: Install Terraform, Packer, and Vault
+      ansible.builtin.apt:
+        name:
+          - terraform
+          - packer
+          - vault
+        state: present
+        update_cache: true
+
+    - name: Verify tool installation versions
+      ansible.builtin.command: "{{ item }} --version"
+      register: tool_versions
+      loop:
+        - terraform
+        - packer
+        - vault
+      changed_when: false
+
+    - name: Display installed versions
+      ansible.builtin.debug:
+        msg: "{{ item.stdout_lines | first }}"
+      loop: "{{ tool_versions.results }}"
+...

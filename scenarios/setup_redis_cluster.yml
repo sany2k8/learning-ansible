@@ -1,0 +1,30 @@
+---
+- name: Cache — Standalone Multi-port Redis Cluster Simulation
+  hosts: all
+  become: true
+  tasks:
+    - name: Install redis-server utilities
+      ansible.builtin.apt:
+        name: redis-server
+        state: present
+
+    - name: Create Redis cluster configuration directories
+      ansible.builtin.file:
+        path: "/etc/redis-cluster/{{ item }}"
+        state: directory
+        mode: '0755'
+      loop: ['7000', '7001', '7002']
+
+    - name: Deploy Cluster Instance configurations
+      ansible.builtin.copy:
+        content: |
+          port {{ item }}
+          cluster-enabled yes
+          cluster-config-file nodes.conf
+          cluster-node-timeout 5000
+          appendonly yes
+          dir /etc/redis-cluster/{{ item }}
+        dest: "/etc/redis-cluster/{{ item }}/redis.conf"
+        mode: '0644'
+      loop: ['7000', '7001', '7002']
+...

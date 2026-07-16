@@ -1,0 +1,42 @@
+---
+- name: Infrastructure Scenario — Configure Swap File (OOM Prevention)
+  hosts: all
+  become: true
+  vars:
+    swap_file_path: "/swapfile"
+    swap_size_mb: 2048                 # 2GB Swap space
+  tasks:
+    - name: Check if swap space is already active
+      ansible.builtin.command: swapon --show
+      register: swapon_out
+      changed_when: false
+
+    - name: Create swap file if not active
+      block:
+        - name: Allocate memory for swapfile
+          ansible.builtin.command: "dd if=/dev/zero of={{ swap_file_path }} bs=1M count={{ swap_size_mb }}"
+          args:
+            creates: "{{ swap_file_path }}"
+
+        - name: Set correct permissions on swapfile
+          ansible.builtin.file:
+            path: "{{ swap_file_path }}"
+            mode: '0600'
+            owner: root
+            group: root
+
+        - name: Format the swap file
+          ansible.builtin.command: "mkswap {{ swap_file_path }}"
+
+        - name: Activate the swap file
+          ansible.builtin.command: "swapon {{ swap_file_path }}"
+      when: swap_file_path not in swapon_out.stdout
+
+    - name: Persist swap file activation in /etc/fstab
+      ansible.posix.mount:
+        path: none
+        src: "{{ swap_file_path }}"
+        fstype: swap
+        opts: sw
+        state: present
+...

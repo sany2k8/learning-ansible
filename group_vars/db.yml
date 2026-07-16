@@ -1,0 +1,6 @@
+---
+db_port: 5432
+db_name: "app_db"
+db_user: "app_user"
+# In production, db_password should be loaded from Vault
+db_password: "fallback_dev_password"

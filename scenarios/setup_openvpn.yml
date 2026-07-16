@@ -1,0 +1,10 @@
+---
+- name: VPN — OpenVPN Server Setup
+  hosts: all
+  become: true
+  tasks:
+    - name: Install OpenVPN
+      ansible.builtin.apt:
+        name: [openvpn, easy-rsa]
+        state: present
+...

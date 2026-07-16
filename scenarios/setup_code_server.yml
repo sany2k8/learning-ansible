@@ -1,0 +1,16 @@
+---
+- name: Development Environment — self-hosted code-server via web browser
+  hosts: all
+  become: true
+  tasks:
+    - name: Run code-server docker container
+      community.docker.docker_container:
+        name: code-server
+        image: codercom/code-server:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "8083:8080"
+        volumes:
+          - ~/.config:/home/coder/.config
+...

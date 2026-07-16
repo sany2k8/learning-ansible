@@ -1,0 +1,7 @@
+---
+exclude_paths:
+  - .github/
+  - vault/
+profile: null
+warn_list:
+  - experimental

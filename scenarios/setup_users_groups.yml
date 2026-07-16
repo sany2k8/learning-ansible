@@ -1,0 +1,32 @@
+---
+- name: Infrastructure — Users, Groups, and Sudo
+  hosts: all
+  become: true
+  vars:
+    system_users:
+      - { name: deployer, groups: "sudo,docker", shell: "/bin/bash" }
+      - { name: developer, groups: "docker", shell: "/bin/bash" }
+      - { name: monitoring, groups: "", shell: "/usr/sbin/nologin" }
+  tasks:
+    - name: Ensure required groups exist
+      ansible.builtin.group:
+        name: "{{ item }}"
+        state: present
+      loop: [docker, developer]
+
+    - name: Create system users
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        groups: "{{ item.groups }}"
+        shell: "{{ item.shell }}"
+        append: true
+        state: present
+      loop: "{{ system_users }}"
+
+    - name: Setup passwordless sudo for deployer
+      ansible.builtin.copy:
+        content: "deployer ALL=(ALL) NOPASSWD:ALL\n"
+        dest: /etc/sudoers.d/deployer
+        mode: '0440'
+        validate: '/usr/sbin/visudo -cf %s'
+...

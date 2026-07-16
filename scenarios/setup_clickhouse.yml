@@ -1,0 +1,31 @@
+---
+- name: Database — ClickHouse Analytics Database
+  hosts: all
+  become: true
+  tasks:
+    - name: Add ClickHouse GPG key
+      ansible.builtin.apt_key:
+        url: https://packages.clickhouse.com/rpm/lts/repodata/repomd.xml.key
+        keyserver: hkp://keyserver.ubuntu.com:80
+        id: 8919F6BD2B48D754
+        state: present
+
+    - name: Add ClickHouse repository
+      ansible.builtin.apt_repository:
+        repo: "deb https://packages.clickhouse.com/deb stable main"
+        state: present
+
+    - name: Install ClickHouse packages
+      ansible.builtin.apt:
+        name: [clickhouse-server, clickhouse-client, clickhouse-common-static]
+        state: present
+        update_cache: true
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+
+    - name: Ensure ClickHouse is running and enabled
+      ansible.builtin.service:
+        name: clickhouse-server
+        state: started
+        enabled: true
+...

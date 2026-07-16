@@ -1,0 +1,20 @@
+---
+- name: Proxy — Traefik Proxy Router via Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: Run Traefik Proxy router container
+      community.docker.docker_container:
+        name: traefik_router
+        image: traefik:v2.10
+        state: started
+        published_ports:
+          - "80:80"
+          - "8080:8080"
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock:ro
+        command:
+          - "--api.insecure=true"
+          - "--providers.docker=true"
+          - "--entrypoints.web.address=:80"
+...

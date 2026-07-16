@@ -1,0 +1,20 @@
+---
+- name: Utilities — Tmux and custom config
+  hosts: all
+  become: true
+  tasks:
+    - name: Install tmux
+      ansible.builtin.package:
+        name: tmux
+        state: present
+
+    - name: Deploy basic user config
+      ansible.builtin.copy:
+        content: |
+          set -g mouse on
+          set -g history-limit 10000
+        dest: "/home/{{ ansible_user }}/.tmux.conf"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0644'
+...

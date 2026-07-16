@@ -1,0 +1,50 @@
+---
+- name: Install PostgreSQL packages
+  ansible.builtin.apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - python3-psycopg2
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Deploy pg_hba.conf
+  ansible.builtin.template:
+    src: pg_hba.conf.j2
+    dest: "/etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: '0640'
+  notify: Restart PostgreSQL
+  when: ansible_os_family == "Debian"
+
+- name: Configure PostgreSQL listen address
+  ansible.builtin.lineinfile:
+    path: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
+    regexp: '^#?listen_addresses\s*=.*'
+    line: "listen_addresses = '*'"
+    state: present
+  notify: Restart PostgreSQL
+  when: ansible_os_family == "Debian"
+
+- name: Ensure PostgreSQL service is running and enabled
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: true
+
+- name: Create database user
+  community.postgresql.postgresql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    state: present
+  become: true
+  become_user: postgres
+
+- name: Create database
+  community.postgresql.postgresql_db:
+    name: "{{ db_name }}"
+    owner: "{{ db_user }}"
+    state: present
+  become: true
+  become_user: postgres

@@ -1,0 +1,31 @@
+---
+- name: Ensure groups exist
+  ansible.builtin.group:
+    name: "{{ item.groups | default('deployer') }}"
+    state: present
+  loop: "{{ users_list }}"
+
+- name: Create system users
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    shell: "{{ item.shell | default('/bin/bash') }}"
+    groups: "{{ item.groups | default('deployer') }}"
+    append: true
+    state: present
+  loop: "{{ users_list }}"
+
+- name: Setup SSH authorized keys for users
+  ansible.builtin.authorized_key:
+    user: "{{ item.name }}"
+    key: "{{ item.ssh_key }}"
+    state: present
+  loop: "{{ users_list }}"
+  when: item.ssh_key is defined and item.ssh_key != ""
+
+- name: Setup sudo passwordless access for admin group users
+  ansible.builtin.copy:
+    content: "%admin ALL=(ALL) NOPASSWD:ALL"
+    dest: /etc/sudoers.d/admin-nopasswd
+    mode: '0440'
+    validate: '/usr/sbin/visudo -cf %s'
+  when: users_enable_sudo_nopasswd | default(true)

@@ -1,0 +1,15 @@
+---
+- name: Message Queue — NATS Server via Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: Run NATS server container
+      community.docker.docker_container:
+        name: nats-server
+        image: nats:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "4222:4222"
+          - "8222:8222"
+...

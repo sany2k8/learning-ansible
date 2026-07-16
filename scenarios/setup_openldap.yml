@@ -1,0 +1,12 @@
+---
+- name: Authentication — OpenLDAP Directory Server
+  hosts: all
+  become: true
+  tasks:
+    - name: Install OpenLDAP packages
+      ansible.builtin.apt:
+        name: [slapd, ldap-utils]
+        state: present
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+...

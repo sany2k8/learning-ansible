@@ -1,0 +1,57 @@
+---
+- name: Scenario — Standalone Docker Setup
+  hosts: all
+  become: true
+  vars:
+    docker_compose_version: "v2.24.5"
+    admin_users:
+      - "{{ ansible_user }}"
+  tasks:
+    - name: Install prerequisite system packages
+      ansible.builtin.package:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - python3-pip
+        state: present
+
+    - name: Add Docker official GPG key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Setup stable Docker repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+
+    - name: Install Docker Engine and Containerd
+      ansible.builtin.package:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+
+    - name: Start and enable Docker service
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Add admin users to Docker system group
+      ansible.builtin.user:
+        name: "{{ item }}"
+        groups: docker
+        append: true
+      loop: "{{ admin_users }}"
+
+    - name: Install Docker Compose CLI Plugin
+      ansible.builtin.get_url:
+        url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-linux-x86_64"
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+...

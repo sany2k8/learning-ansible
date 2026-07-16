@@ -1,0 +1,30 @@
+---
+- name: Runtime — Go Programming Language
+  hosts: all
+  become: true
+  vars:
+    go_version: "1.22.4"
+  tasks:
+    - name: Download Go binary tarball
+      ansible.builtin.get_url:
+        url: "https://go.dev/dl/go{{ go_version }}.linux-amd64.tar.gz"
+        dest: /tmp/go.tar.gz
+        mode: '0644'
+
+    - name: Remove previous Go installation
+      ansible.builtin.file:
+        path: /usr/local/go
+        state: absent
+
+    - name: Extract Go to /usr/local
+      ansible.builtin.unarchive:
+        src: /tmp/go.tar.gz
+        dest: /usr/local
+        remote_src: true
+
+    - name: Add Go to system PATH
+      ansible.builtin.copy:
+        content: 'export PATH=$PATH:/usr/local/go/bin'
+        dest: /etc/profile.d/golang.sh
+        mode: '0644'
+...

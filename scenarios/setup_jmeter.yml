@@ -1,0 +1,15 @@
+---
+- name: Load Testing — Apache JMeter Setup
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Java runtime (JMeter dependency)
+      ansible.builtin.apt:
+        name: default-jre
+        state: present
+
+    - name: Install JMeter
+      ansible.builtin.apt:
+        name: jmeter
+        state: present
+...

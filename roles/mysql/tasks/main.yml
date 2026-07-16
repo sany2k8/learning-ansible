@@ -1,0 +1,35 @@
+---
+- name: Install MySQL packages
+  ansible.builtin.package:
+    name:
+      - mysql-server
+      - python3-pymysql
+    state: present
+
+- name: Deploy MySQL configuration
+  ansible.builtin.template:
+    src: my.cnf.j2
+    dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+    mode: '0644'
+  notify: Restart MySQL
+
+- name: Ensure MySQL service is running and enabled
+  ansible.builtin.service:
+    name: mysql
+    state: started
+    enabled: true
+
+- name: Create database
+  community.mysql.mysql_db:
+    name: "{{ db_name }}"
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Create database user
+  community.mysql.mysql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    priv: "{{ db_name }}.*:ALL"
+    host: "%"
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock

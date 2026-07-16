@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to {{ ansible_hostname }}</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 10%; }
+    </style>
+</head>
+<body>
+    <h1>Managed by Ansible</h1>
+    <p>This server is running in the <strong>{{ env_name | default('development') }}</strong> environment.</p>
+    <p>Target Hostname: {{ ansible_hostname }}</p>
+    <p>Internal IP: {{ ansible_default_ipv4.address | default('N/A') }}</p>
+</body>
+</html>

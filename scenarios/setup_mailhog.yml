@@ -1,0 +1,15 @@
+---
+- name: Mail — Setup MailHog mock SMTP Server via Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: Run MailHog container
+      community.docker.docker_container:
+        name: mailhog
+        image: mailhog/mailhog:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "1025:1025"
+          - "8025:8025"
+...

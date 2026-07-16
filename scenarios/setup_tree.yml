@@ -1,0 +1,10 @@
+---
+- name: Utilities — Directory visualizer tree tool
+  hosts: all
+  become: true
+  tasks:
+    - name: Install tree
+      ansible.builtin.package:
+        name: tree
+        state: present
+...

@@ -1,0 +1,27 @@
+---
+- name: Logging — Fluent Bit Log Processor
+  hosts: all
+  become: true
+  tasks:
+    - name: Add Fluent Bit GPG key
+      ansible.builtin.apt_key:
+        url: https://packages.fluentbit.io/fluentbit.key
+        state: present
+
+    - name: Add Fluent Bit repository
+      ansible.builtin.apt_repository:
+        repo: "deb https://packages.fluentbit.io/ubuntu/{{ ansible_distribution_release }} {{ ansible_distribution_release }} main"
+        state: present
+
+    - name: Install Fluent Bit
+      ansible.builtin.apt:
+        name: td-agent-bit
+        state: present
+        update_cache: true
+
+    - name: Ensure Fluent Bit service is running and enabled
+      ansible.builtin.service:
+        name: td-agent-bit
+        state: started
+        enabled: true
+...

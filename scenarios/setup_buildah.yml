@@ -1,0 +1,20 @@
+---
+- name: Container — Buildah OCI Image Builder
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Buildah
+      ansible.builtin.apt:
+        name: buildah
+        state: present
+        update_cache: true
+
+    - name: Verify Buildah installation
+      ansible.builtin.command: buildah --version
+      register: buildah_ver
+      changed_when: false
+
+    - name: Print Buildah version
+      ansible.builtin.debug:
+        msg: "{{ buildah_ver.stdout }}"
+...

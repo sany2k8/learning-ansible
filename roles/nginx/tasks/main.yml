@@ -1,0 +1,34 @@
+---
+- name: Install nginx packages
+  ansible.builtin.package:
+    name: nginx
+    state: present
+
+- name: Create document root directory
+  ansible.builtin.file:
+    path: "{{ document_root }}"
+    state: directory
+    mode: '0755'
+    owner: www-data
+    group: www-data
+
+- name: Deploy basic index.html
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: "{{ document_root }}/index.html"
+    mode: '0644'
+    owner: www-data
+    group: www-data
+
+- name: Configure main nginx configuration
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    mode: '0644'
+  notify: Reload Nginx
+
+- name: Ensure nginx service is running and enabled
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true

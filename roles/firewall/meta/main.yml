@@ -1,0 +1,11 @@
+---
+galaxy_info:
+  author: sany
+  description: UFW Firewall configuration
+  license: MIT
+  min_ansible_version: "2.10"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+dependencies: []

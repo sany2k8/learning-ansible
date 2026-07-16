@@ -1,0 +1,37 @@
+---
+- name: Logging — Kibana UI
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Kibana
+      ansible.builtin.apt:
+        name: kibana
+        state: present
+        update_cache: true
+
+    - name: Configure Kibana server port
+      ansible.builtin.lineinfile:
+        path: /etc/kibana/kibana.yml
+        regexp: '^#?server\.port:'
+        line: 'server.port: 5601'
+      notify: Restart Kibana
+
+    - name: Configure Kibana server host
+      ansible.builtin.lineinfile:
+        path: /etc/kibana/kibana.yml
+        regexp: '^#?server\.host:'
+        line: 'server.host: "0.0.0.0"'
+      notify: Restart Kibana
+
+    - name: Ensure Kibana service is running and enabled
+      ansible.builtin.service:
+        name: kibana
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Restart Kibana
+      ansible.builtin.service:
+        name: kibana
+        state: restarted
+...

@@ -1,0 +1,18 @@
+---
+- name: Nginx Handler Demonstration
+  hosts: web
+  become: true
+  tasks:
+    - name: Update nginx configuration
+      ansible.builtin.template:
+        src: ../07-templates/templates/nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+        mode: '0644'
+      notify: Restart Nginx
+
+  handlers:
+    - name: Restart Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+...

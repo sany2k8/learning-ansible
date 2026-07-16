@@ -1,0 +1,40 @@
+---
+- name: Proxy — Nginx Reverse Proxy Server Block Setup
+  hosts: all
+  become: true
+  tasks:
+    - name: Ensure Nginx is installed
+      ansible.builtin.package:
+        name: nginx
+        state: present
+
+    - name: Deploy reverse proxy server block
+      ansible.builtin.copy:
+        content: |
+          server {
+              listen 80;
+              server_name proxy.local;
+
+              location / {
+                  proxy_pass http://127.0.0.1:8080;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+              }
+          }
+        dest: /etc/nginx/sites-available/reverse_proxy.conf
+        mode: '0644'
+      notify: Reload Nginx
+
+    - name: Enable site symlink
+      ansible.builtin.file:
+        src: /etc/nginx/sites-available/reverse_proxy.conf
+        dest: /etc/nginx/sites-enabled/reverse_proxy.conf
+        state: link
+      notify: Reload Nginx
+
+  handlers:
+    - name: Reload Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
+...

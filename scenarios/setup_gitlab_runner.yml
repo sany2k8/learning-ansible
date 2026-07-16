@@ -1,0 +1,31 @@
+---
+- name: CI/CD — GitLab Runner
+  hosts: all
+  become: true
+  tasks:
+    - name: Add GitLab Runner GPG key
+      ansible.builtin.apt_key:
+        url: https://packages.gitlab.com/runner/gitlab-runner/gpgkey
+        state: present
+
+    - name: Add GitLab Runner repository
+      ansible.builtin.apt_repository:
+        repo: "deb https://packages.gitlab.com/runner/gitlab-runner/ubuntu/ {{ ansible_distribution_release }} main"
+        state: present
+
+    - name: Install GitLab Runner
+      ansible.builtin.apt:
+        name: gitlab-runner
+        state: present
+        update_cache: true
+
+    - name: Ensure GitLab Runner is running and enabled
+      ansible.builtin.service:
+        name: gitlab-runner
+        state: started
+        enabled: true
+
+    - name: Print registration reminder
+      ansible.builtin.debug:
+        msg: "Run 'sudo gitlab-runner register' to register this runner with your GitLab instance."
+...

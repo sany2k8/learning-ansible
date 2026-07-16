@@ -1,0 +1,22 @@
+---
+- name: Loops Demo Playbook
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Create multiple directories in a loop
+      ansible.builtin.debug:
+        msg: "Creating directory: /tmp/app/{{ item }}"
+      loop:
+        - src
+        - config
+        - logs
+        - data
+
+    - name: Create multiple users with different metadata
+      ansible.builtin.debug:
+        msg: "Creating user {{ item.name }} with home {{ item.home | default('/home/' + item.name) }}"
+      loop:
+        - { name: 'alice', home: '/var/lib/alice' }
+        - { name: 'bob' }
+        - { name: 'charlie' }
+...

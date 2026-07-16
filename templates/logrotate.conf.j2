@@ -1,0 +1,13 @@
+/var/log/{{ app_name | default('my_app') }}/*.log {
+    daily
+    missingok
+    rotate 14
+    compress
+    delaycompress
+    notifempty
+    create 0660 www-data www-data
+    sharedscripts
+    postrotate
+        systemctl reload nginx >/dev/null 2>&1 || true
+    endscript
+}

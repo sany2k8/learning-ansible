@@ -1,0 +1,27 @@
+---
+- name: Variable Scopes Demo
+  hosts: all
+  gather_facts: false
+  vars:
+    playbook_scoped_var: "I am playbook scope"
+
+  tasks:
+    - name: Run a shell command to register output
+      ansible.builtin.command: uname -a
+      register: system_info
+      changed_when: false
+
+    - name: Print registered variable
+      ansible.builtin.debug:
+        msg: "System kernel info: {{ system_info.stdout }}"
+
+    - name: Define a dynamic fact using set_fact
+      ansible.builtin.set_fact:
+        custom_dynamic_fact: "Calculated at runtime for host {{ inventory_hostname }}"
+
+    - name: Print all variables
+      ansible.builtin.debug:
+        msg: >
+          Playbook Var: {{ playbook_scoped_var }},
+          Dynamic Fact: {{ custom_dynamic_fact }}
+...

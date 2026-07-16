@@ -1,0 +1,86 @@
+---
+- name: Deploy Flask Application
+  hosts: web
+  become: true
+  vars:
+    app_name: my_flask_app
+    app_dir: "/var/www/{{ app_name }}"
+    git_repo: "https://github.com/nginxinc/demo-nginx-wsgi.git" # Example public WSGI app
+  tasks:
+    - name: Install Python pip and virtualenv
+      ansible.builtin.package:
+        name:
+          - python3-pip
+          - python3-venv
+          - python3-setuptools
+        state: present
+
+    - name: Create application directory with correct permissions
+      ansible.builtin.file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+
+    - name: Clone app repository
+      ansible.builtin.git:
+        repo: "{{ git_repo }}"
+        dest: "{{ app_dir }}/src"
+        version: main
+        force: true
+      become_user: www-data
+      notify: Restart Flask Application
+
+    - name: Install application dependencies in virtualenv
+      ansible.builtin.pip:
+        requirements: "{{ app_dir }}/src/requirements.txt"
+        virtualenv: "{{ app_dir }}/venv"
+        virtualenv_command: /usr/bin/python3 -m venv
+      become_user: www-data
+      notify: Restart Flask Application
+
+    - name: Deploy systemd service unit
+      ansible.builtin.template:
+        src: ../templates/flask_app.service.j2
+        dest: "/etc/systemd/system/{{ app_name }}.service"
+        mode: '0644'
+      notify:
+        - Reload systemd
+        - Restart Flask Application
+
+    - name: Ensure Flask service is enabled and started
+      ansible.builtin.service:
+        name: "{{ app_name }}"
+        state: started
+        enabled: true
+
+    - name: Configure Nginx reverse proxy block
+      ansible.builtin.template:
+        src: ../templates/nginx_reverse_proxy.conf.j2
+        dest: "/etc/nginx/sites-available/{{ app_name }}.conf"
+        mode: '0644'
+      notify: Reload Nginx
+
+    - name: Enable Nginx proxy block configuration
+      ansible.builtin.file:
+        src: "/etc/nginx/sites-available/{{ app_name }}.conf"
+        dest: "/etc/nginx/sites-enabled/{{ app_name }}.conf"
+        state: link
+      notify: Reload Nginx
+
+  handlers:
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Restart Flask Application
+      ansible.builtin.service:
+        name: "{{ app_name }}"
+        state: restarted
+
+    - name: Reload Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
+...

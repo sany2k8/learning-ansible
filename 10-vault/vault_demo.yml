@@ -1,0 +1,11 @@
+---
+- name: Ansible Vault Demo Playbook
+  hosts: all
+  gather_facts: false
+  vars_files:
+    - vars/secrets.yml
+  tasks:
+    - name: Print vault-encrypted secret variables securely
+      ansible.builtin.debug:
+        msg: "Loaded secret database user '{{ vaulted_db_user }}' with password '{{ vaulted_db_password }}'"
+...

@@ -1,0 +1,42 @@
+---
+- name: Monitoring — Promtail Log Shipper via Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: Create Promtail configuration directory
+      ansible.builtin.file:
+        path: /etc/promtail
+        state: directory
+        mode: '0755'
+
+    - name: Deploy Promtail config file
+      ansible.builtin.copy:
+        content: |
+          server:
+            http_listen_port: 9080
+            grpc_listen_port: 0
+          positions:
+            filename: /tmp/positions.yaml
+          clients:
+            - url: http://localhost:3100/loki/api/v1/push
+          scrape_configs:
+          - job_name: system
+            static_configs:
+            - targets:
+                - localhost
+              labels:
+                job: varlogs
+                __path__: /var/log/*log
+        dest: /etc/promtail/promtail-config.yml
+        mode: '0644'
+
+    - name: Run Promtail container
+      community.docker.docker_container:
+        name: promtail
+        image: grafana/promtail:latest
+        state: started
+        restart_policy: always
+        volumes:
+          - /etc/promtail/promtail-config.yml:/etc/promtail/config.yml
+          - /var/log:/var/log:ro
+...

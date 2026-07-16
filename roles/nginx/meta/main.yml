@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  author: sany
+  description: Nginx web server installation
+  license: MIT
+  min_ansible_version: "2.10"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+dependencies:
+  - role: common

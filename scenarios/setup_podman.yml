@@ -1,0 +1,20 @@
+---
+- name: Container — Podman (Docker-compatible daemonless)
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Podman
+      ansible.builtin.apt:
+        name: [podman, slirp4netns, fuse-overlayfs]
+        state: present
+        update_cache: true
+
+    - name: Verify Podman installation
+      ansible.builtin.command: podman --version
+      register: podman_ver
+      changed_when: false
+
+    - name: Print Podman version
+      ansible.builtin.debug:
+        msg: "{{ podman_ver.stdout }}"
+...

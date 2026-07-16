@@ -1,0 +1,23 @@
+---
+- name: Infrastructure — Set Hostname and Timezone
+  hosts: all
+  become: true
+  vars:
+    target_hostname: "ansible-lab"
+    target_timezone: "UTC"
+  tasks:
+    - name: Set system hostname
+      ansible.builtin.hostname:
+        name: "{{ target_hostname }}"
+
+    - name: Add hostname to /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '^127\.0\.1\.1'
+        line: "127.0.1.1 {{ target_hostname }}"
+        state: present
+
+    - name: Set system timezone
+      community.general.timezone:
+        name: "{{ target_timezone }}"
+...

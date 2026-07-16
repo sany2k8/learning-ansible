@@ -1,0 +1,10 @@
+---
+- name: Infrastructure — Legacy NTP daemon
+  hosts: all
+  become: true
+  tasks:
+    - name: Install ntp
+      ansible.builtin.package:
+        name: ntp
+        state: present
+...

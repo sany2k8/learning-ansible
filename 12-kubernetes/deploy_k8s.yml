@@ -1,0 +1,58 @@
+---
+- name: Deploy Kubernetes Resources
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Create Kubernetes namespace
+      kubernetes.core.k8s:
+        name: web-app
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Deploy web application Deployment
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: web-server
+            namespace: web-app
+            labels:
+              app: web
+          spec:
+            replicas: 2
+            selector:
+              matchLabels:
+                app: web
+            template:
+              metadata:
+                labels:
+                  app: web
+              spec:
+                containers:
+                  - name: nginx
+                    image: nginx:alpine
+                    ports:
+                      - containerPort: 80
+
+    - name: Expose Deployment as Service
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: web-service
+            namespace: web-app
+          spec:
+            selector:
+              app: web
+            ports:
+              - protocol: TCP
+                port: 80
+                targetPort: 80
+            type: ClusterIP
+...

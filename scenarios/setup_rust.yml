@@ -1,0 +1,32 @@
+---
+- name: Runtime — Rust Programming Language via rustup
+  hosts: all
+  become: true
+  tasks:
+    - name: Install build tools for Rust compilation
+      ansible.builtin.apt:
+        name: [build-essential, curl]
+        state: present
+        update_cache: true
+
+    - name: Download rustup installer script
+      ansible.builtin.get_url:
+        url: https://sh.rustup.rs
+        dest: /tmp/rustup.sh
+        mode: '0755'
+
+    - name: Install Rust toolchain via rustup for all users
+      ansible.builtin.shell: |
+        CARGO_HOME=/opt/rust RUSTUP_HOME=/opt/rustup /tmp/rustup.sh -y --default-toolchain stable --no-modify-path
+      args:
+        creates: /opt/rust/bin/cargo
+
+    - name: Add Rust binaries to system PATH
+      ansible.builtin.copy:
+        content: |
+          export CARGO_HOME=/opt/rust
+          export RUSTUP_HOME=/opt/rustup
+          export PATH=$PATH:/opt/rust/bin
+        dest: /etc/profile.d/rust.sh
+        mode: '0644'
+...

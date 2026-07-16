@@ -1,0 +1,41 @@
+---
+- name: Infrastructure — Chrony NTP Time Synchronization
+  hosts: all
+  become: true
+  vars:
+    ntp_servers:
+      - "169.254.169.123"   # AWS NTP via IMDS
+      - "0.pool.ntp.org"
+  tasks:
+    - name: Install chrony
+      ansible.builtin.package:
+        name: chrony
+        state: present
+
+    - name: Deploy chrony configuration
+      ansible.builtin.template:
+        src: /dev/stdin
+        dest: /etc/chrony/chrony.conf
+        mode: '0644'
+      vars:
+        template_content: |
+          {% for server in ntp_servers %}
+          server {{ server }} iburst
+          {% endfor %}
+          driftfile /var/lib/chrony/chrony.drift
+          makestep 1.0 3
+          rtcsync
+      notify: Restart chrony
+
+    - name: Ensure chrony service is running and enabled
+      ansible.builtin.service:
+        name: chrony
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Restart chrony
+      ansible.builtin.service:
+        name: chrony
+        state: restarted
+...

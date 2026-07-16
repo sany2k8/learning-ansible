@@ -1,0 +1,14 @@
+---
+- name: Authentication — Authelia Single Sign-On Portal via Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: Run Authelia container
+      community.docker.docker_container:
+        name: authelia
+        image: authelia/authelia:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "9091:9091"
+...

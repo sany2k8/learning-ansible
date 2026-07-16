@@ -1,0 +1,17 @@
+---
+- name: VPN — WireGuard Secure Tunneling Setup
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Wireguard tools
+      ansible.builtin.apt:
+        name: [wireguard, iproute2]
+        state: present
+
+    - name: Generate Wireguard private and public keys
+      ansible.builtin.shell: |
+        wg genkey | tee privatekey | wg pubkey > publickey
+      args:
+        chdir: /etc/wireguard
+        creates: /etc/wireguard/privatekey
+...

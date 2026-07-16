@@ -1,0 +1,32 @@
+---
+- name: CI/CD — SonarQube Code Quality Server via Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: Increase VM max map count for Elasticsearch (SonarQube requirement)
+      ansible.posix.sysctl:
+        name: vm.max_map_count
+        value: "262144"
+        state: present
+        reload: true
+
+    - name: Run SonarQube container
+      community.docker.docker_container:
+        name: sonarqube
+        image: sonarqube:lts-community
+        state: started
+        restart_policy: always
+        published_ports:
+          - "9000:9000"
+        env:
+          SONAR_JDBC_USERNAME: sonar
+          SONAR_JDBC_PASSWORD: sonar_password
+        ulimits:
+          - nofile:65536:65536
+
+    - name: Allow SonarQube port in UFW
+      community.general.ufw:
+        rule: allow
+        port: "9000"
+        proto: tcp
+...

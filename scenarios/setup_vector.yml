@@ -1,0 +1,11 @@
+---
+- name: Monitoring — Vector Log/Metrics Agent
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Vector
+      ansible.builtin.shell: |
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.vector.dev | sh -s -- -y
+      args:
+        creates: /root/.vector/bin/vector
+...

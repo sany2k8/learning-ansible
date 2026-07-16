@@ -1,0 +1,14 @@
+---
+- name: Infrastructure — Mount additional storage volume
+  hosts: all
+  become: true
+  vars:
+    device_path: "/dev/sdb"
+    mnt_point: "/mnt/storage"
+  tasks:
+    - name: Ensure target directory is available
+      ansible.builtin.file:
+        path: "{{ mnt_point }}"
+        state: directory
+        mode: '0755'
+...

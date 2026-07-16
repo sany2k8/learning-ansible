@@ -1,0 +1,4 @@
+---
+env_name: "staging"
+debug_mode: true
+enable_minify: false

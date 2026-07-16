@@ -1,0 +1,58 @@
+---
+- name: Web Server — HAProxy Load Balancer
+  hosts: all
+  become: true
+  tasks:
+    - name: Install HAProxy
+      ansible.builtin.apt:
+        name: haproxy
+        state: present
+        update_cache: true
+
+    - name: Deploy HAProxy configuration
+      ansible.builtin.copy:
+        content: |
+          global
+              log /dev/log local0
+              maxconn 4096
+              daemon
+
+          defaults
+              log     global
+              mode    http
+              option  httplog
+              option  dontlognull
+              timeout connect 5s
+              timeout client  30s
+              timeout server  30s
+
+          frontend http_front
+              bind *:80
+              default_backend http_back
+
+          backend http_back
+              balance roundrobin
+              server app1 127.0.0.1:8080 check
+              server app2 127.0.0.1:8081 check
+
+          listen stats
+              bind *:8404
+              stats enable
+              stats uri /stats
+              stats refresh 10s
+        dest: /etc/haproxy/haproxy.cfg
+        mode: '0644'
+      notify: Restart HAProxy
+
+    - name: Ensure HAProxy is running and enabled
+      ansible.builtin.service:
+        name: haproxy
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Restart HAProxy
+      ansible.builtin.service:
+        name: haproxy
+        state: restarted
+...

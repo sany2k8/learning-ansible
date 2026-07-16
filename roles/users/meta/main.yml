@@ -1,0 +1,11 @@
+---
+galaxy_info:
+  author: sany
+  description: Management of users and SSH authorization keys
+  license: MIT
+  min_ansible_version: "2.10"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+dependencies: []

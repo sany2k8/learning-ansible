@@ -1,0 +1,15 @@
+---
+- name: Message Queue — Apache ActiveMQ Classic via Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: Run ActiveMQ container
+      community.docker.docker_container:
+        name: activemq
+        image: rmohr/activemq:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "61616:61616"
+          - "8161:8161"
+...

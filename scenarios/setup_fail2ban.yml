@@ -1,0 +1,16 @@
+---
+- name: Infrastructure — Standalone Fail2ban Setup
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Fail2ban
+      ansible.builtin.package:
+        name: fail2ban
+        state: present
+
+    - name: Ensure Fail2ban is started and enabled
+      ansible.builtin.service:
+        name: fail2ban
+        state: started
+        enabled: true
+...

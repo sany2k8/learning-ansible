@@ -1,0 +1,11 @@
+---
+- name: Infrastructure — Timezone configuration
+  hosts: all
+  become: true
+  vars:
+    timezone_var: "UTC"
+  tasks:
+    - name: Set timezone
+      community.general.timezone:
+        name: "{{ timezone_var }}"
+...

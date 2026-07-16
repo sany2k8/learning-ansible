@@ -1,0 +1,12 @@
+---
+- name: Infrastructure — Firewalld Setup
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Firewalld
+      ansible.builtin.package:
+        name: firewalld
+        state: present
+        update_cache: true
+      when: ansible_os_family == "RedHat" or ansible_os_family == "Debian"
+...

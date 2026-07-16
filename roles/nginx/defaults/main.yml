@@ -1,0 +1,6 @@
+---
+http_port: 80
+server_name: localhost
+document_root: /var/www/html
+nginx_worker_processes: auto
+nginx_worker_connections: 768

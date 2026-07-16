@@ -1,0 +1,13 @@
+---
+- name: Create System Users
+  hosts: all
+  become: true
+  tasks:
+    - name: Create deployer user
+      ansible.builtin.user:
+        name: deployer
+        shell: /bin/bash
+        groups: sudo
+        append: true
+        state: present
+...

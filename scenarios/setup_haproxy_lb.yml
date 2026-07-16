@@ -1,0 +1,31 @@
+---
+- name: Proxy — HAProxy Layer 7 Load Balancing Scenario
+  hosts: all
+  become: true
+  tasks:
+    - name: Install HAProxy
+      ansible.builtin.package:
+        name: haproxy
+        state: present
+
+    - name: Deploy config supporting roundrobin balancing
+      ansible.builtin.copy:
+        content: |
+          frontend main
+              bind *:80
+              default_backend web_servers
+
+          backend web_servers
+              balance roundrobin
+              server web1 192.168.64.10:80 check
+              server web2 192.168.64.11:80 check
+        dest: /etc/haproxy/haproxy.cfg
+        mode: '0644'
+      notify: Restart HAProxy
+
+  handlers:
+    - name: Restart HAProxy
+      ansible.builtin.service:
+        name: haproxy
+        state: restarted
+...

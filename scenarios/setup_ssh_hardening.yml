@@ -1,0 +1,55 @@
+---
+- name: Scenario — SSH Hardening & Fail2ban Configuration
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Fail2ban security service
+      ansible.builtin.package:
+        name: fail2ban
+        state: present
+
+    - name: Ensure Fail2ban service is running and enabled
+      ansible.builtin.service:
+        name: fail2ban
+        state: started
+        enabled: true
+
+    - name: Hardening sshd_config options
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+        validate: '/usr/sbin/sshd -t -f %s'
+      loop:
+        - { regexp: '^#?PermitRootLogin', line: 'PermitRootLogin prohibit-password' }
+        - { regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no' }
+        - { regexp: '^#?X11Forwarding', line: 'X11Forwarding no' }
+        - { regexp: '^#?MaxAuthTries', line: 'MaxAuthTries 3' }
+      notify: Restart SSH
+
+    - name: Deploy custom Fail2ban jail configuration
+      ansible.builtin.copy:
+        content: |
+          [sshd]
+          enabled = true
+          port = ssh
+          filter = sshd
+          logpath = /var/log/auth.log
+          maxretry = 3
+          bantime = 1h
+        dest: /etc/fail2ban/jail.local
+        mode: '0644'
+      notify: Restart Fail2ban
+
+  handlers:
+    - name: Restart SSH
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
+
+    - name: Restart Fail2ban
+      ansible.builtin.service:
+        name: fail2ban
+        state: restarted
+...

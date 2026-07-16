@@ -1,0 +1,50 @@
+---
+- name: Monitoring — Grafana Loki Log Aggregator via Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: Create Loki configuration directory
+      ansible.builtin.file:
+        path: /etc/loki
+        state: directory
+        mode: '0755'
+
+    - name: Deploy Loki config file
+      ansible.builtin.copy:
+        content: |
+          auth_enabled: false
+          server:
+            http_listen_port: 3100
+          common:
+            ring:
+              instance_addr: 127.0.0.1
+              kvstore:
+                store: inmemory
+            replication_factor: 1
+            path_prefix: /tmp/loki
+          schema_config:
+            configs:
+            - from: 2020-10-24
+              store: boltdb-shipper
+              object_store: filesystem
+              schema: v11
+              index:
+                prefix: index_
+                period: 24h
+          storage_config:
+            filesystem:
+              directory: /tmp/loki/chunks
+        dest: /etc/loki/loki-config.yml
+        mode: '0644'
+
+    - name: Run Loki container
+      community.docker.docker_container:
+        name: loki
+        image: grafana/loki:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "3100:3100"
+        volumes:
+          - /etc/loki/loki-config.yml:/etc/loki/local-config.yaml
+...

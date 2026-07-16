@@ -1,0 +1,28 @@
+---
+- name: Git — Bare Git Server Configuration
+  hosts: all
+  become: true
+  tasks:
+    - name: Ensure git package is present
+      ansible.builtin.package:
+        name: git
+        state: present
+
+    - name: Create git system user
+      ansible.builtin.user:
+        name: git
+        shell: /usr/bin/git-shell
+        state: present
+
+    - name: Create bare repository
+      ansible.builtin.command: git init --bare /home/git/project.git
+      args:
+        creates: /home/git/project.git
+
+    - name: Set ownership of project repo to git user
+      ansible.builtin.file:
+        path: /home/git/project.git
+        owner: git
+        group: git
+        recurse: true
+...

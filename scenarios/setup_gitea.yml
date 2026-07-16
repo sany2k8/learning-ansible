@@ -1,0 +1,90 @@
+---
+- name: Git Scenario — Standalone Gitea Setup
+  hosts: all
+  become: true
+  vars:
+    gitea_version: "1.21.5"
+    gitea_user: "git"
+    gitea_home: "/home/git"
+  tasks:
+    - name: Create git system user
+      ansible.builtin.user:
+        name: "{{ gitea_user }}"
+        shell: /bin/bash
+        home: "{{ gitea_home }}"
+        system: true
+        state: present
+
+    - name: Create Gitea working directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ gitea_user }}"
+        group: "{{ gitea_user }}"
+        mode: '0750'
+      loop:
+        - /var/lib/gitea
+        - /var/lib/gitea/custom
+        - /var/lib/gitea/data
+        - /var/lib/gitea/log
+        - /etc/gitea
+
+    - name: Download Gitea binary
+      ansible.builtin.get_url:
+        url: "https://dl.gitea.com/gitea/{{ gitea_version }}/gitea-{{ gitea_version }}-linux-amd64"
+        dest: /usr/local/bin/gitea
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: Deploy systemd service unit for Gitea
+      ansible.builtin.copy:
+        content: |
+          [Unit]
+          Description=Gitea (Git with a cup of tea)
+          After=syslog.target
+          After=network.target
+
+          [Service]
+          LimitMEMLOCK=infinity
+          LimitNOFILE=65535
+          RestartSec=2s
+          Type=simple
+          User={{ gitea_user }}
+          Group={{ gitea_user }}
+          WorkingDirectory=/var/lib/gitea/
+          ExecStart=/usr/local/bin/gitea web --config /etc/gitea/app.ini
+          Restart=always
+          Environment=USER={{ gitea_user }} HOME={{ gitea_home }} GITEA_WORK_DIR=/var/lib/gitea
+
+          [Install]
+          WantedBy=multi-user.target
+        dest: /etc/systemd/system/gitea.service
+        mode: '0644'
+      notify: Reload systemd
+
+    - name: Set correct permissions on Gitea configuration directory
+      ansible.builtin.file:
+        path: /etc/gitea
+        state: directory
+        owner: "{{ gitea_user }}"
+        group: "{{ gitea_user }}"
+        mode: '0770'
+
+    - name: Ensure Gitea service is started and enabled
+      ansible.builtin.service:
+        name: gitea
+        state: started
+        enabled: true
+
+    - name: Allow Gitea default web port in UFW
+      community.general.ufw:
+        rule: allow
+        port: "3000"
+        proto: tcp
+
+  handlers:
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: true
+...

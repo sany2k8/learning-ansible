@@ -1,0 +1,26 @@
+---
+- name: Message Queue — Apache Kafka Standalone via Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: Run Zookeeper container (Kafka dependency)
+      community.docker.docker_container:
+        name: zookeeper
+        image: wurstmeister/zookeeper:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "2181:2181"
+
+    - name: Run Kafka container
+      community.docker.docker_container:
+        name: kafka
+        image: wurstmeister/kafka:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "9092:9092"
+        env:
+          KAFKA_ADVERTISED_HOST_NAME: localhost
+          KAFKA_ZOOKEEPER_CONNECT: localhost:2181
+...

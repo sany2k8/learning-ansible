@@ -1,0 +1,23 @@
+---
+- name: Deploy Custom Nginx Config via Template
+  hosts: web
+  become: true
+  tasks:
+    - name: Ensure target directory exists
+      ansible.builtin.file:
+        path: /etc/nginx
+        state: directory
+        mode: '0755'
+
+    - name: Deploy templated nginx.conf
+      ansible.builtin.template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+        mode: '0644'
+
+    - name: Deploy templated index.html
+      ansible.builtin.template:
+        src: templates/index.html.j2
+        dest: "{{ document_root | default('/var/www/html') }}/index.html"
+        mode: '0644'
+...

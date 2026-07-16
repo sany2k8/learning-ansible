@@ -1,0 +1,20 @@
+---
+- name: Display Target System Facts
+  hosts: all
+  tasks:
+    - name: Print OS distribution and family
+      ansible.builtin.debug:
+        msg: "Distro: {{ ansible_distribution }}, Family: {{ ansible_os_family }}"
+
+    - name: Print hostname
+      ansible.builtin.debug:
+        msg: "Hostname is: {{ ansible_hostname }}"
+
+    - name: Print system architecture
+      ansible.builtin.debug:
+        msg: "CPU architecture is: {{ ansible_userspace_architecture }}"
+
+    - name: Print memory information
+      ansible.builtin.debug:
+        msg: "Total memory MB: {{ ansible_memtotal_mb }}"
+...

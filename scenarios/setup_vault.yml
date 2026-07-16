@@ -1,0 +1,36 @@
+---
+- name: Secrets Management — Standalone HashiCorp Vault Server Setup
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Vault
+      ansible.builtin.apt:
+        name: vault
+        state: present
+
+    - name: Deploy basic systemd dev environment config
+      ansible.builtin.copy:
+        content: |
+          storage "file" {
+            path = "/var/lib/vault/data"
+          }
+          listener "tcp" {
+            address     = "0.0.0.0:8200"
+            tls_disable = 1
+          }
+        dest: /etc/vault.d/vault.hcl
+        mode: '0644'
+      notify: Restart Vault
+
+    - name: Start Vault service
+      ansible.builtin.service:
+        name: vault
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Restart Vault
+      ansible.builtin.service:
+        name: vault
+        state: restarted
+...

@@ -1,0 +1,7 @@
+---
+- name: Database Servers Playbook
+  hosts: db
+  roles:
+    - common
+    - postgresql
+...

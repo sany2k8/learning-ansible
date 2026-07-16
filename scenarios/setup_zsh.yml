@@ -1,0 +1,15 @@
+---
+- name: Utilities — ZSH Shell environment setup
+  hosts: all
+  become: true
+  tasks:
+    - name: Install zsh
+      ansible.builtin.package:
+        name: zsh
+        state: present
+
+    - name: Change user shell to zsh
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        shell: /usr/bin/zsh
+...

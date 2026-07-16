@@ -1,0 +1,56 @@
+---
+- name: Scenario — Standalone Jenkins CI/CD Setup
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Java (Jenkins requirement)
+      ansible.builtin.apt:
+        name: openjdk-17-jre
+        state: present
+        update_cache: true
+
+    - name: Download Jenkins repository key
+      ansible.builtin.get_url:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+        dest: /usr/share/keyrings/jenkins-keyring.asc
+        mode: '0644'
+
+    - name: Add Jenkins apt repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
+        state: present
+        filename: jenkins
+
+    - name: Install Jenkins
+      ansible.builtin.apt:
+        name: jenkins
+        state: present
+        update_cache: true
+
+    - name: Start and enable Jenkins service
+      ansible.builtin.service:
+        name: jenkins
+        state: started
+        enabled: true
+
+    - name: Allow Jenkins traffic through UFW
+      community.general.ufw:
+        rule: allow
+        port: "8080"
+        proto: tcp
+
+    - name: Wait for initial admin password generation
+      ansible.builtin.wait_for:
+        path: /var/lib/jenkins/secrets/initialAdminPassword
+        state: present
+        timeout: 60
+
+    - name: Retrieve initial admin password
+      ansible.builtin.command: cat /var/lib/jenkins/secrets/initialAdminPassword
+      register: admin_password_output
+      changed_when: false
+
+    - name: Print initial Jenkins Admin Password
+      ansible.builtin.debug:
+        msg: "Your initial Jenkins admin password is: {{ admin_password_output.stdout }}"
+...

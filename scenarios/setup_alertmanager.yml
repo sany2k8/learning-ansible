@@ -1,0 +1,38 @@
+---
+- name: Monitoring — Prometheus Alertmanager via Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: Create Alertmanager config directory
+      ansible.builtin.file:
+        path: /etc/alertmanager
+        state: directory
+        mode: '0755'
+
+    - name: Deploy basic Alertmanager configuration
+      ansible.builtin.copy:
+        content: |
+          route:
+            group_by: ['alertname']
+            group_wait: 30s
+            group_interval: 5m
+            repeat_interval: 12h
+            receiver: 'web.hook'
+          receivers:
+          - name: 'web.hook'
+            webhook_configs:
+            - url: 'http://127.0.0.1:5001/'
+        dest: /etc/alertmanager/alertmanager.yml
+        mode: '0644'
+
+    - name: Run Alertmanager container
+      community.docker.docker_container:
+        name: alertmanager
+        image: prom/alertmanager:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "9093:9093"
+        volumes:
+          - /etc/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+...

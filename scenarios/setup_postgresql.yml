@@ -1,0 +1,64 @@
+---
+- name: Scenario — Standalone PostgreSQL Setup
+  hosts: all
+  become: true
+  vars:
+    pg_db_name: "prod_app_db"
+    pg_db_user: "db_admin"
+    pg_db_password: "super_secure_pg_password"
+    pg_version: "14"
+  tasks:
+    - name: Install PostgreSQL and packages
+      ansible.builtin.apt:
+        name:
+          - postgresql-{{ pg_version }}
+          - postgresql-contrib-{{ pg_version }}
+          - python3-psycopg2
+        state: present
+        update_cache: true
+
+    - name: Configure PostgreSQL to listen on all interfaces
+      ansible.builtin.lineinfile:
+        path: "/etc/postgresql/{{ pg_version }}/main/postgresql.conf"
+        regexp: '^#?listen_addresses\s*=.*'
+        line: "listen_addresses = '*'"
+        state: present
+      notify: Restart PostgreSQL
+
+    - name: Deploy pg_hba.conf client access rules
+      ansible.builtin.blockinfile:
+        path: "/etc/postgresql/{{ pg_version }}/main/pg_hba.conf"
+        block: |
+          # Allow connection from anywhere using MD5 passwords
+          host    all             all             0.0.0.0/0               md5
+          host    all             all             ::/0                    md5
+      notify: Restart PostgreSQL
+
+    - name: Ensure PostgreSQL service is started and enabled
+      ansible.builtin.service:
+        name: postgresql
+        state: started
+        enabled: true
+
+    - name: Create database user
+      community.postgresql.postgresql_user:
+        name: "{{ pg_db_user }}"
+        password: "{{ pg_db_password }}"
+        state: present
+      become: true
+      become_user: postgres
+
+    - name: Create application database
+      community.postgresql.postgresql_db:
+        name: "{{ pg_db_name }}"
+        owner: "{{ pg_db_user }}"
+        state: present
+      become: true
+      become_user: postgres
+
+  handlers:
+    - name: Restart PostgreSQL
+      ansible.builtin.service:
+        name: postgresql
+        state: restarted
+...

@@ -1,0 +1,22 @@
+---
+- name: Apply common system configuration
+  hosts: all
+  roles:
+    - common
+    - users
+
+- name: Apply firewall settings
+  hosts: all
+  roles:
+    - firewall
+
+- name: Setup web servers
+  hosts: web
+  roles:
+    - nginx
+
+- name: Setup database servers
+  hosts: db
+  roles:
+    - postgresql
+...

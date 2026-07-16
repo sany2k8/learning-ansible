@@ -1,0 +1,12 @@
+---
+- name: Infrastructure — Sysctl Kernel Performance tuning
+  hosts: all
+  become: true
+  tasks:
+    - name: Boost max connection backlog
+      ansible.posix.sysctl:
+        name: net.core.somaxconn
+        value: "1024"
+        state: present
+        reload: true
+...

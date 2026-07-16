@@ -1,0 +1,52 @@
+---
+- name: Database Scenario — Standalone MySQL Setup
+  hosts: all
+  become: true
+  vars:
+    mysql_db_name: "prod_mysql_db"
+    mysql_db_user: "mysql_admin"
+    mysql_db_password: "secure_mysql_password_abc"
+  tasks:
+    - name: Install MySQL Server and python dependency
+      ansible.builtin.apt:
+        name:
+          - mysql-server
+          - python3-pymysql
+        state: present
+        update_cache: true
+
+    - name: Configure MySQL to listen on all interfaces
+      ansible.builtin.lineinfile:
+        path: /etc/mysql/mysql.conf.d/mysqld.cnf
+        regexp: '^bind-address\s*=.*'
+        line: "bind-address = 0.0.0.0"
+        state: present
+      notify: Restart MySQL
+
+    - name: Ensure MySQL is running and enabled
+      ansible.builtin.service:
+        name: mysql
+        state: started
+        enabled: true
+
+    - name: Create database
+      community.mysql.mysql_db:
+        name: "{{ mysql_db_name }}"
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Create database admin user
+      community.mysql.mysql_user:
+        name: "{{ mysql_db_user }}"
+        password: "{{ mysql_db_password }}"
+        priv: "{{ mysql_db_name }}.*:ALL"
+        host: "%"
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+  handlers:
+    - name: Restart MySQL
+      ansible.builtin.service:
+        name: mysql
+        state: restarted
+...

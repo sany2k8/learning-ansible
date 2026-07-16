@@ -1,0 +1,14 @@
+---
+- name: Monitoring — Prometheus Blackbox Exporter via Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: Run Blackbox Exporter container
+      community.docker.docker_container:
+        name: blackbox_exporter
+        image: prom/blackbox-exporter:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "9115:9115"
+...

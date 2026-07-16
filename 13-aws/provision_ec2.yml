@@ -1,0 +1,47 @@
+---
+- name: Provision AWS Infrastructure
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    aws_region: us-east-1
+    instance_type: t2.micro
+    ami_id: ami-0c7217cdde317cfec # Ubuntu 22.04 LTS (us-east-1)
+  tasks:
+    - name: Create security group for web servers
+      amazon.aws.ec2_security_group:
+        name: web-sg
+        description: Allow SSH and HTTP traffic
+        region: "{{ aws_region }}"
+        rules:
+          - proto: tcp
+            ports:
+              - 22
+            cidr_ip: 0.0.0.0/0
+            rule_desc: allow all on port 22
+          - proto: tcp
+            ports:
+              - 80
+              - 443
+            cidr_ip: 0.0.0.0/0
+            rule_desc: allow http/https
+      register: web_sg_info
+
+    - name: Launch an EC2 instance
+      amazon.aws.ec2_instance:
+        name: ansible-web-target
+        key_name: my-ssh-key
+        region: "{{ aws_region }}"
+        instance_type: "{{ instance_type }}"
+        image_id: "{{ ami_id }}"
+        security_group: web-sg
+        vpc_subnet_id: subnet-12345678 # Replace with actual Subnet ID
+        wait: true
+      register: ec2_info
+
+    - name: Create an S3 bucket
+      amazon.aws.s3_bucket:
+        name: learning-ansible-backup-bucket-sany
+        state: present
+        region: "{{ aws_region }}"
+...

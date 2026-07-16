@@ -1,0 +1,52 @@
+---
+- name: Logging — Elasticsearch Standalone
+  hosts: all
+  become: true
+  tasks:
+    - name: Install elasticsearch dependency
+      ansible.builtin.apt:
+        name: apt-transport-https
+        state: present
+
+    - name: Add Elasticsearch GPG Key
+      ansible.builtin.apt_key:
+        url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+        state: present
+
+    - name: Add Elasticsearch Repository
+      ansible.builtin.apt_repository:
+        repo: "deb https://artifacts.elastic.co/packages/7.x/apt stable main"
+        state: present
+
+    - name: Install Elasticsearch
+      ansible.builtin.apt:
+        name: elasticsearch
+        state: present
+        update_cache: true
+
+    - name: Configure Elasticsearch JVM heap size
+      ansible.builtin.lineinfile:
+        path: /etc/elasticsearch/jvm.options
+        regexp: '^-Xms'
+        line: '-Xms512m'
+      notify: Restart Elasticsearch
+
+    - name: Configure Elasticsearch JVM max heap size
+      ansible.builtin.lineinfile:
+        path: /etc/elasticsearch/jvm.options
+        regexp: '^-Xmx'
+        line: '-Xmx512m'
+      notify: Restart Elasticsearch
+
+    - name: Ensure Elasticsearch is running and enabled
+      ansible.builtin.service:
+        name: elasticsearch
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Restart Elasticsearch
+      ansible.builtin.service:
+        name: elasticsearch
+        state: restarted
+...

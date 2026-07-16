@@ -1,0 +1,12 @@
+---
+- name: Infrastructure — Generic sysctl settings applier
+  hosts: all
+  become: true
+  tasks:
+    - name: Set swappiness level
+      ansible.posix.sysctl:
+        name: vm.swappiness
+        value: "10"
+        state: present
+        reload: true
+...

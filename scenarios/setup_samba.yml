@@ -1,0 +1,38 @@
+---
+- name: Storage — Samba Server Share (Windows compatible)
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Samba
+      ansible.builtin.apt:
+        name: samba
+        state: present
+
+    - name: Create Shared directory
+      ansible.builtin.file:
+        path: /srv/samba/share
+        state: directory
+        mode: '0777'
+        owner: nobody
+        group: nogroup
+
+    - name: Configure Samba shares configuration
+      ansible.builtin.blockinfile:
+        path: /etc/samba/smb.conf
+        block: |
+          [SharedFolder]
+             comment = Samba Shared Directory
+             path = /srv/samba/share
+             browsable = yes
+             guest ok = yes
+             read only = no
+             create mask = 0777
+             directory mask = 0777
+      notify: Restart Samba
+
+  handlers:
+    - name: Restart Samba
+      ansible.builtin.service:
+        name: smbd
+        state: restarted
+...

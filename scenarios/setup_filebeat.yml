@@ -1,0 +1,41 @@
+---
+- name: Logging — Filebeat Log Shipper
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Filebeat
+      ansible.builtin.apt:
+        name: filebeat
+        state: present
+        update_cache: true
+
+    - name: Deploy Filebeat configuration
+      ansible.builtin.copy:
+        content: |
+          filebeat.inputs:
+          - type: log
+            enabled: true
+            paths:
+              - /var/log/*.log
+          output.elasticsearch:
+            hosts: ["localhost:9200"]
+        dest: /etc/filebeat/filebeat.yml
+        mode: '0600'
+      notify: Restart Filebeat
+
+    - name: Enable system module
+      ansible.builtin.command: filebeat modules enable system
+      changed_when: false
+
+    - name: Ensure Filebeat service is running and enabled
+      ansible.builtin.service:
+        name: filebeat
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Restart Filebeat
+      ansible.builtin.service:
+        name: filebeat
+        state: restarted
+...

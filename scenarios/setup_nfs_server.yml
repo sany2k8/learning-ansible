@@ -1,0 +1,34 @@
+---
+- name: Storage — NFS Shared File System Server
+  hosts: all
+  become: true
+  vars:
+    nfs_export_directory: "/srv/nfs/share"
+    nfs_allowed_subnet: "192.168.64.0/24"
+  tasks:
+    - name: Install NFS kernel server
+      ansible.builtin.apt:
+        name: nfs-kernel-server
+        state: present
+
+    - name: Create NFS shared directory
+      ansible.builtin.file:
+        path: "{{ nfs_export_directory }}"
+        state: directory
+        owner: nobody
+        group: nogroup
+        mode: '0777'
+
+    - name: Configure exports file
+      ansible.builtin.lineinfile:
+        path: /etc/exports
+        line: "{{ nfs_export_directory }} {{ nfs_allowed_subnet }}(rw,sync,no_subtree_check)"
+        state: present
+      notify: Restart NFS Server
+
+  handlers:
+    - name: Restart NFS Server
+      ansible.builtin.service:
+        name: nfs-kernel-server
+        state: restarted
+...

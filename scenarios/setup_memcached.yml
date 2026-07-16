@@ -1,0 +1,30 @@
+---
+- name: Cache — Memcached Server
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Memcached
+      ansible.builtin.apt:
+        name: [memcached, libmemcached-tools]
+        state: present
+        update_cache: true
+
+    - name: Ensure Memcached runs on localhost only
+      ansible.builtin.lineinfile:
+        path: /etc/memcached.conf
+        regexp: '^-l\s+.*'
+        line: '-l 127.0.0.1'
+      notify: Restart Memcached
+
+    - name: Ensure Memcached is running and enabled
+      ansible.builtin.service:
+        name: memcached
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Restart Memcached
+      ansible.builtin.service:
+        name: memcached
+        state: restarted
+...

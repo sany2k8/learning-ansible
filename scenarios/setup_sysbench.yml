@@ -1,0 +1,10 @@
+---
+- name: Performance Testing — Benchmarking tool sysbench
+  hosts: all
+  become: true
+  tasks:
+    - name: Install sysbench
+      ansible.builtin.package:
+        name: sysbench
+        state: present
+...

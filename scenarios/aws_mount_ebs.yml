@@ -1,0 +1,41 @@
+---
+- name: AWS Scenario — Format and Mount EBS Volume
+  hosts: all
+  become: true
+  vars:
+    ebs_device: "/dev/xvdf"          # Update to match your block device (e.g. /dev/nvme1n1)
+    mount_point: "/mnt/ebs_data"
+    fstype: "ext4"
+  tasks:
+    - name: Ensure mount point directory exists
+      ansible.builtin.file:
+        path: "{{ mount_point }}"
+        state: directory
+        mode: '0755'
+
+    - name: Check device status
+      ansible.builtin.command: "blkid {{ ebs_device }}"
+      register: blkid_out
+      failed_when: false
+      changed_when: false
+
+    - name: Create ext4 filesystem on EBS volume if not already formatted
+      community.general.filesystem:
+        fstype: "{{ fstype }}"
+        dev: "{{ ebs_device }}"
+        force: false
+      when: blkid_out.rc != 0
+
+    - name: Get UUID of the block device
+      ansible.builtin.command: "blkid -s UUID -o value {{ ebs_device }}"
+      register: device_uuid
+      changed_when: false
+
+    - name: Mount EBS volume and persist in fstab
+      ansible.posix.mount:
+        path: "{{ mount_point }}"
+        src: "UUID={{ device_uuid.stdout }}"
+        fstype: "{{ fstype }}"
+        opts: defaults,nofail
+        state: mounted
+...

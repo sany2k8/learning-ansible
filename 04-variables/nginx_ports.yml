@@ -1,0 +1,11 @@
+---
+- name: Nginx Ports with Variables
+  hosts: web
+  become: true
+  vars:
+    default_nginx_port: 80
+  tasks:
+    - name: Display calculated port
+      ansible.builtin.debug:
+        msg: "Target port for {{ inventory_hostname }} is {{ custom_nginx_port | default(default_nginx_port) }}"
+...

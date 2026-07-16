@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  author: sany
+  description: MySQL Database installation
+  license: MIT
+  min_ansible_version: "2.10"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+dependencies:
+  - role: common

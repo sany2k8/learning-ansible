@@ -1,0 +1,42 @@
+---
+- name: Web Server — Traefik Reverse Proxy via Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: Create Traefik configuration directory
+      ansible.builtin.file:
+        path: /etc/traefik
+        state: directory
+        mode: '0755'
+
+    - name: Deploy static Traefik configuration
+      ansible.builtin.copy:
+        content: |
+          entryPoints:
+            web:
+              address: ":80"
+            websecure:
+              address: ":443"
+          api:
+            dashboard: true
+            insecure: true
+          providers:
+            docker:
+              exposedByDefault: false
+        dest: /etc/traefik/traefik.yml
+        mode: '0644'
+
+    - name: Run Traefik container
+      community.docker.docker_container:
+        name: traefik
+        image: traefik:v3.0
+        state: started
+        restart_policy: always
+        published_ports:
+          - "80:80"
+          - "443:443"
+          - "8080:8080"
+        volumes:
+          - /etc/traefik/traefik.yml:/etc/traefik/traefik.yml
+          - /var/run/docker.sock:/var/run/docker.sock:ro
+...

@@ -1,0 +1,65 @@
+---
+- name: AWS Scenario — Install & Configure Unified CloudWatch Agent
+  hosts: all
+  become: true
+  tasks:
+    - name: Download Amazon CloudWatch Agent package for Debian/Ubuntu
+      ansible.builtin.get_url:
+        url: https://amazoncloudwatch-agent.s3.amazonaws.com/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+        dest: /tmp/amazon-cloudwatch-agent.deb
+        mode: '0644'
+
+    - name: Install CloudWatch Agent deb package
+      ansible.builtin.apt:
+        deb: /tmp/amazon-cloudwatch-agent.deb
+        state: present
+
+    - name: Deploy CloudWatch Agent configuration
+      ansible.builtin.copy:
+        content: |
+          {
+            "agent": {
+              "metrics_collection_interval": 60,
+              "run_as_user": "cwagent"
+            },
+            "metrics": {
+              "metrics_collected": {
+                "disk": {
+                  "measurement": ["used_percent"],
+                  "resources": ["*"]
+                },
+                "mem": {
+                  "measurement": ["mem_used_percent"]
+                }
+              }
+            },
+            "logs": {
+              "logs_collected": {
+                "files": {
+                  "collect_list": [
+                    {
+                      "file_path": "/var/log/auth.log",
+                      "log_group_name": "auth-logs",
+                      "log_stream_name": "{hostname}-auth"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        dest: /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+        mode: '0644'
+      notify: Restart CloudWatch Agent
+
+    - name: Start and enable CloudWatch Agent
+      ansible.builtin.service:
+        name: amazon-cloudwatch-agent
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Restart CloudWatch Agent
+      ansible.builtin.service:
+        name: amazon-cloudwatch-agent
+        state: restarted
+...

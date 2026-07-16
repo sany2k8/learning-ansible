@@ -1,0 +1,77 @@
+---
+- name: Load Testing Scenario — Setup Locust Load Tester
+  hosts: all
+  become: true
+  vars:
+    locust_port: 8089
+  tasks:
+    - name: Install Python3 pip and dependencies
+      ansible.builtin.apt:
+        name:
+          - python3-pip
+          - python3-venv
+        state: present
+        update_cache: true
+
+    - name: Create dedicated Locust directory
+      ansible.builtin.file:
+        path: /etc/locust
+        state: directory
+        mode: '0755'
+
+    - name: Install Locust via pip
+      ansible.builtin.pip:
+        name: locust
+        state: present
+
+    - name: Deploy default load test script (locustfile.py)
+      ansible.builtin.copy:
+        content: |
+          from locust import HttpUser, task, between
+
+          class QuickstartUser(HttpUser):
+              wait_time = between(1, 5)
+
+              @task
+              def hello_world(self):
+                  self.client.get("/")
+        dest: /etc/locust/locustfile.py
+        mode: '0644'
+
+    - name: Deploy systemd service unit for Locust daemon
+      ansible.builtin.copy:
+        content: |
+          [Unit]
+          Description=Locust Load Testing Tool Daemon
+          After=network.target
+
+          [Service]
+          Type=simple
+          User=root
+          WorkingDirectory=/etc/locust
+          ExecStart=/usr/local/bin/locust -f locustfile.py --web-port {{ locust_port }}
+          Restart=on-failure
+
+          [Install]
+          WantedBy=multi-user.target
+        dest: /etc/systemd/system/locust.service
+        mode: '0644'
+      notify: Reload systemd
+
+    - name: Ensure Locust daemon is started and enabled
+      ansible.builtin.service:
+        name: locust
+        state: started
+        enabled: true
+
+    - name: Allow Locust web port in firewall
+      community.general.ufw:
+        rule: allow
+        port: "{{ locust_port }}"
+        proto: tcp
+
+  handlers:
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: true
+...
