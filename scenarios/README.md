@@ -1,6 +1,6 @@
 # Scenario-based Playbooks
 
-This directory contains standalone, scenario-based playbooks designed for quick, end-to-end automation of common server configurations.
+This directory contains standalone, scenario-based playbooks designed for quick, end-to-end automation of common server configurations. **All scenarios here are fully compatible and can be run to configure and practice on any Ubuntu instances (e.g. AWS EC2, local Multipass VMs, or other Ubuntu environments).**
 
 ## Available Scenarios
 
