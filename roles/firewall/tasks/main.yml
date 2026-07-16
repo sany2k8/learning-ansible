@@ -9,8 +9,8 @@
     direction: "{{ item.direction }}"
     policy: "{{ item.policy }}"
   loop:
-    - { direction: 'incoming', policy: 'deny' }
-    - { direction: 'outgoing', policy: 'allow' }
+    - {direction: 'incoming', policy: 'deny'}
+    - {direction: 'outgoing', policy: 'allow'}
 
 - name: Allow configured firewall ports
   community.general.ufw:
