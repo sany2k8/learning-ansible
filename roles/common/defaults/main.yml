@@ -1,5 +1,5 @@
 ---
-system_timezone: "UTC"
+common_system_timezone: "UTC"
 common_packages:
   - curl
   - git
@@ -7,6 +7,6 @@ common_packages:
   - vim
   - htop
   - ufw
-ntp_servers:
+common_ntp_servers:
   - "0.pool.ntp.org"
   - "1.pool.ntp.org"

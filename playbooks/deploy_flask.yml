@@ -29,6 +29,7 @@
         dest: "{{ app_dir }}/src"
         version: main
         force: true
+      become: true
       become_user: www-data
       notify: Restart Flask Application
 
@@ -37,12 +38,13 @@
         requirements: "{{ app_dir }}/src/requirements.txt"
         virtualenv: "{{ app_dir }}/venv"
         virtualenv_command: /usr/bin/python3 -m venv
+      become: true
       become_user: www-data
       notify: Restart Flask Application
 
     - name: Deploy systemd service unit
       ansible.builtin.template:
-        src: ../templates/flask_app.service.j2
+        src: flask_app.service.j2
         dest: "/etc/systemd/system/{{ app_name }}.service"
         mode: '0644'
       notify:
@@ -57,7 +59,7 @@
 
     - name: Configure Nginx reverse proxy block
       ansible.builtin.template:
-        src: ../templates/nginx_reverse_proxy.conf.j2
+        src: nginx_reverse_proxy.conf.j2
         dest: "/etc/nginx/sites-available/{{ app_name }}.conf"
         mode: '0644'
       notify: Reload Nginx

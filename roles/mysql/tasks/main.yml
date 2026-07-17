@@ -21,15 +21,15 @@
 
 - name: Create database
   community.mysql.mysql_db:
-    name: "{{ db_name }}"
+    name: "{{ mysql_db_name }}"
     state: present
     login_unix_socket: /var/run/mysqld/mysqld.sock
 
 - name: Create database user
   community.mysql.mysql_user:
-    name: "{{ db_user }}"
-    password: "{{ db_password }}"
-    priv: "{{ db_name }}.*:ALL"
+    name: "{{ mysql_db_user }}"
+    password: "{{ mysql_db_password }}"
+    priv: "{{ mysql_db_name }}.*:ALL"
     host: "%"
     state: present
     login_unix_socket: /var/run/mysqld/mysqld.sock

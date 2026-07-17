@@ -4,3 +4,4 @@ collections:
   - name: kubernetes.core
   - name: community.aws
   - name: community.general
+  - name: community.mysql

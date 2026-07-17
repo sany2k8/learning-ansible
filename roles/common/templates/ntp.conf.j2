@@ -9,7 +9,7 @@ filegen peerstats file peerstats type day enable
 filegen clockstats file clockstats type day enable
 
 # Specify NTP servers from variable
-{% for server in ntp_servers %}
+{% for server in common_ntp_servers %}
 pool {{ server }} iburst
 {% endfor %}
 

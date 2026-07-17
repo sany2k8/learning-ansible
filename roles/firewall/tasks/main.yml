@@ -4,13 +4,15 @@
     name: ufw
     state: present
 
-- name: Set UFW default policies
+- name: Set UFW default incoming policy to deny
   community.general.ufw:
-    direction: "{{ item.direction }}"
-    policy: "{{ item.policy }}"
-  loop:
-    - {direction: 'incoming', policy: 'deny'}
-    - {direction: 'outgoing', policy: 'allow'}
+    direction: incoming
+    policy: deny
+
+- name: Set UFW default outgoing policy to allow
+  community.general.ufw:
+    direction: outgoing
+    policy: allow
 
 - name: Allow configured firewall ports
   community.general.ufw:

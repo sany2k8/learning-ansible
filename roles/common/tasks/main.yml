@@ -12,7 +12,7 @@
 
 - name: Set system timezone
   community.general.timezone:
-    name: "{{ system_timezone }}"
+    name: "{{ common_system_timezone }}"
   notify: Restart cron
 
 - name: Configure NTP servers

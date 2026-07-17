@@ -20,7 +20,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install ansible-lint yamllint
+          pip install ansible-core ansible-lint yamllint
+          ansible-galaxy collection install -r requirements.yml
 
       - name: Run yamllint
         run: yamllint .
