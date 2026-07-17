@@ -16,7 +16,7 @@
       ansible.builtin.debug:
         msg: "Creating user {{ item.name }} with home {{ item.home | default('/home/' + item.name) }}"
       loop:
-        - { name: 'alice', home: '/var/lib/alice' }
-        - { name: 'bob' }
-        - { name: 'charlie' }
+        - {name: 'alice', home: '/var/lib/alice'}
+        - {name: 'bob'}
+        - {name: 'charlie'}
 ...

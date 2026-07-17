@@ -10,7 +10,9 @@
 
     - name: Add Fluent Bit repository
       ansible.builtin.apt_repository:
-        repo: "deb https://packages.fluentbit.io/ubuntu/{{ ansible_distribution_release }} {{ ansible_distribution_release }} main"
+        repo: >-
+          deb https://packages.fluentbit.io/ubuntu/{{ ansible_distribution_release }}
+          {{ ansible_distribution_release }} main
         state: present
 
     - name: Install Fluent Bit

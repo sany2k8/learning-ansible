@@ -4,9 +4,9 @@
   become: true
   vars:
     system_users:
-      - { name: deployer, groups: "sudo,docker", shell: "/bin/bash" }
-      - { name: developer, groups: "docker", shell: "/bin/bash" }
-      - { name: monitoring, groups: "", shell: "/usr/sbin/nologin" }
+      - {name: deployer, groups: "sudo,docker", shell: "/bin/bash"}
+      - {name: developer, groups: "docker", shell: "/bin/bash"}
+      - {name: monitoring, groups: "", shell: "/usr/sbin/nologin"}
   tasks:
     - name: Ensure required groups exist
       ansible.builtin.group:

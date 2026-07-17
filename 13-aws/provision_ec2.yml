@@ -6,7 +6,7 @@
   vars:
     aws_region: us-east-1
     instance_type: t2.micro
-    ami_id: ami-0c7217cdde317cfec # Ubuntu 22.04 LTS (us-east-1)
+    ami_id: ami-0c7217cdde317cfec  # Ubuntu 22.04 LTS (us-east-1)
   tasks:
     - name: Create security group for web servers
       amazon.aws.ec2_security_group:
@@ -35,7 +35,7 @@
         instance_type: "{{ instance_type }}"
         image_id: "{{ ami_id }}"
         security_group: web-sg
-        vpc_subnet_id: subnet-12345678 # Replace with actual Subnet ID
+        vpc_subnet_id: subnet-12345678  # Replace with actual Subnet ID
         wait: true
       register: ec2_info
 

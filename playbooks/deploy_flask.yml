@@ -5,7 +5,7 @@
   vars:
     app_name: my_flask_app
     app_dir: "/var/www/{{ app_name }}"
-    git_repo: "https://github.com/nginxinc/demo-nginx-wsgi.git" # Example public WSGI app
+    git_repo: "https://github.com/nginxinc/demo-nginx-wsgi.git"  # Example public WSGI app
   tasks:
     - name: Install Python pip and virtualenv
       ansible.builtin.package:
