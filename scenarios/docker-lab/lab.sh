@@ -13,13 +13,48 @@ cd "$(dirname "$0")"
 KEY="${HOME}/.ssh/ansible_lab"
 NODES=(web1 web2 db1)
 
-compose() {
-    if docker compose version >/dev/null 2>&1; then
-        docker compose "$@"
-    else
-        echo "Need Docker Compose v2 ('docker compose'). See README.md." >&2
+# Each check reports the specific thing that is wrong; a generic "compose is
+# missing" message sends you down the wrong path when Docker is absent entirely.
+preflight() {
+    if ! command -v docker >/dev/null 2>&1; then
+        cat >&2 <<'EOF'
+ERROR: Docker is not installed, so there is nothing to run the lab hosts.
+
+    sudo apt update && sudo apt install -y docker.io docker-compose-v2
+    sudo usermod -aG docker "$USER" && newgrp docker
+
+Then re-run: ./lab.sh up
+EOF
         exit 1
     fi
+
+    if ! docker info >/dev/null 2>&1; then
+        cat >&2 <<'EOF'
+ERROR: Docker is installed but the daemon is not reachable.
+
+Either it is not running:
+    sudo systemctl enable --now docker
+
+or your user is not in the 'docker' group yet (needs a new login shell):
+    sudo usermod -aG docker "$USER" && newgrp docker
+EOF
+        exit 1
+    fi
+
+    if ! docker compose version >/dev/null 2>&1; then
+        cat >&2 <<'EOF'
+ERROR: Docker Compose v2 is missing ('docker compose').
+
+    sudo apt install -y docker-compose-v2
+
+The old python 'docker-compose' (v1) cannot read this compose file.
+EOF
+        exit 1
+    fi
+}
+
+compose() {
+    docker compose "$@"
 }
 
 ensure_key() {
@@ -46,6 +81,7 @@ wait_for_ssh() {
 
 case "${1:-up}" in
     up)
+        preflight
         ensure_key
         compose up -d --build
         wait_for_ssh
@@ -54,16 +90,20 @@ case "${1:-up}" in
         echo "Try:   ansible -i inventory/docker-lab.yml all -m ping"
         ;;
     down)
+        preflight
         compose down --remove-orphans
         ;;
     reset)
+        preflight
         compose down --remove-orphans
         exec "$0" up
         ;;
     status)
+        preflight
         compose ps
         ;;
     ssh)
+        preflight
         node="${2:?usage: ./lab.sh ssh <web1|web2|db1>}"
         ip=$(docker inspect -f \
             '{{ (index .NetworkSettings.Networks "ansible-lab").IPAddress }}' "${node}")

@@ -3,9 +3,14 @@
   hosts: all
   become: true
   tasks:
+    - name: Download Vector installation script
+      ansible.builtin.get_url:
+        url: https://sh.vector.dev
+        dest: /usr/local/src/vector-install.sh
+        mode: '0755'
+
     - name: Install Vector
-      ansible.builtin.shell: |
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.vector.dev | sh -s -- -y
+      ansible.builtin.command: /usr/local/src/vector-install.sh -y
       args:
         creates: /root/.vector/bin/vector
 ...

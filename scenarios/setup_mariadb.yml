@@ -20,13 +20,13 @@
         enabled: true
 
     - name: Create database
-      community.mysql.mysql_db:
+      ansible.mysql.mysql_db:
         name: "{{ mariadb_db }}"
         state: present
         login_unix_socket: /run/mysqld/mysqld.sock
 
     - name: Create database user
-      community.mysql.mysql_user:
+      ansible.mysql.mysql_user:
         name: "{{ mariadb_user }}"
         password: "{{ mariadb_password }}"
         priv: "{{ mariadb_db }}.*:ALL"

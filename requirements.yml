@@ -1,7 +1,20 @@
 ---
+# Every collection referenced by an FQCN anywhere in this repo must be listed
+# here, including ones that would otherwise arrive as a transitive dependency
+# (amazon.aws via community.aws) — CI resolves modules from this file alone.
 collections:
   - name: community.docker
   - name: kubernetes.core
-  - name: community.aws
   - name: community.general
-  - name: community.mysql
+  # sysctl, mount, authorized_key, firewalld, selinux
+  - name: ansible.posix
+  - name: community.postgresql
+  # community.mysql was renamed to ansible.mysql; the old namespace is now a
+  # deprecation shim that redirects and is removed in community.mysql 6.0.0.
+  - name: ansible.mysql
+  - name: community.crypto
+  - name: community.rabbitmq
+  # AWS: community.aws depends on amazon.aws, but we call amazon.aws modules
+  # directly, so declare it rather than relying on the dependency chain.
+  - name: amazon.aws
+  - name: community.aws

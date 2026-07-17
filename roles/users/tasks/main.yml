@@ -15,7 +15,7 @@
   loop: "{{ users_list }}"
 
 - name: Setup SSH authorized keys for users
-  ansible.builtin.authorized_key:
+  ansible.posix.authorized_key:
     user: "{{ item.name }}"
     key: "{{ item.ssh_key }}"
     state: present

@@ -10,8 +10,11 @@
 
     - name: Generate Wireguard private and public keys
       ansible.builtin.shell: |
+        set -o pipefail
         wg genkey | tee privatekey | wg pubkey > publickey
       args:
         chdir: /etc/wireguard
         creates: /etc/wireguard/privatekey
+        # /bin/sh on Debian/Ubuntu is dash, which has no 'set -o pipefail'.
+        executable: /bin/bash
 ...

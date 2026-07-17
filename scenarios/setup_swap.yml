@@ -12,6 +12,7 @@
       changed_when: false
 
     - name: Create swap file if not active
+      when: swap_file_path not in swapon_out.stdout
       block:
         - name: Allocate memory for swapfile
           ansible.builtin.command: "dd if=/dev/zero of={{ swap_file_path }} bs=1M count={{ swap_size_mb }}"
@@ -25,12 +26,15 @@
             owner: root
             group: root
 
+        # The enclosing block only runs when this swap file is not already
+        # active, so reaching either task always means a real change.
         - name: Format the swap file
           ansible.builtin.command: "mkswap {{ swap_file_path }}"
+          changed_when: true
 
         - name: Activate the swap file
           ansible.builtin.command: "swapon {{ swap_file_path }}"
-      when: swap_file_path not in swapon_out.stdout
+          changed_when: true
 
     - name: Persist swap file activation in /etc/fstab
       ansible.posix.mount:

@@ -6,7 +6,7 @@
 
 - name: Create document root directory
   ansible.builtin.file:
-    path: "{{ document_root }}"
+    path: "{{ nginx_document_root }}"
     state: directory
     mode: '0755'
     owner: www-data
@@ -15,7 +15,7 @@
 - name: Deploy basic index.html
   ansible.builtin.template:
     src: index.html.j2
-    dest: "{{ document_root }}/index.html"
+    dest: "{{ nginx_document_root }}/index.html"
     mode: '0644'
     owner: www-data
     group: www-data

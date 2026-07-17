@@ -1,6 +1,6 @@
 server {
-    listen {{ http_port | default(80) }};
-    server_name {{ server_name | default('localhost') }};
+    listen {{ nginx_http_port | default(80) }};
+    server_name {{ nginx_server_name | default('localhost') }};
 
     location / {
         proxy_pass http://127.0.0.1:5000;

@@ -1,7 +1,7 @@
 ---
-http_port: 80
-server_name: "example.com"
-document_root: "/var/www/html"
+nginx_http_port: 80
+nginx_server_name: "example.com"
+nginx_document_root: "/var/www/html"
 web_packages:
   - nginx
   - git

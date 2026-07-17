@@ -19,14 +19,27 @@ services with `systemctl` — every concept in this repo works unchanged, on one
 
 ## Install Docker
 
-Use Docker's own repo — the `docker.io` package in the Ubuntu archive ships the
-obsolete Compose v1, which does not understand this compose file.
+Nothing here works until Docker is installed — `./lab.sh up` exits early if it
+is missing, and Ansible then reports every host as UNREACHABLE with a
+*connection timed out* (the 172.20.0.x packets leave for the VPC gateway and are
+dropped, because no container exists to answer).
+
+```bash
+sudo apt update
+sudo apt install -y docker.io docker-compose-v2
+sudo usermod -aG docker "$USER"
+newgrp docker          # or log out and back in
+docker compose version # must print v2.x
+```
+
+`docker-compose-v2` is the separate package that provides the `docker compose`
+subcommand; the old python `docker-compose` v1 cannot read this compose file.
+
+If your Ubuntu release has no `docker-compose-v2` package, use Docker's own repo
+instead — it bundles the Compose plugin:
 
 ```bash
 curl -fsSL https://get.docker.com | sudo sh
-sudo usermod -aG docker "$USER"
-newgrp docker          # or log out and back in
-docker compose version # expect v2.x
 ```
 
 ## Start the lab

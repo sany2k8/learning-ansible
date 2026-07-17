@@ -14,8 +14,10 @@
         shell: /usr/bin/git-shell
         state: present
 
+    # ansible.builtin.git requires a 'repo' to clone from, so it cannot
+    # initialise a brand-new empty bare repo. 'creates' provides idempotency.
     - name: Create bare repository
-      ansible.builtin.command: git init --bare /home/git/project.git
+      ansible.builtin.command: git init --bare /home/git/project.git  # noqa: command-instead-of-module
       args:
         creates: /home/git/project.git
 
