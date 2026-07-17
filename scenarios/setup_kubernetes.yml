@@ -2,6 +2,12 @@
 - name: Scenario — Standalone K3s Kubernetes Setup
   hosts: all
   become: true
+  vars:
+    # Who gets the kubeconfig. ansible_user only exists when the inventory
+    # sets it (e.g. -i "localhost," defines nothing), so fall back to the
+    # login user behind sudo, then to whoever we connected as.
+    kubeconfig_user: >-
+      {{ ansible_user | default(ansible_env.SUDO_USER | default(ansible_user_id), true) }}
   tasks:
     - name: Download K3s installation script
       ansible.builtin.get_url:
@@ -26,26 +32,37 @@
         state: present
         timeout: 30
 
+    # Resolves the real home directory ('/root' for root, '/home/x' for
+    # others) instead of hardcoding /home/.
+    - name: Look up home directory of {{ kubeconfig_user }}
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ kubeconfig_user }}"
+
+    - name: Record kubeconfig destination
+      ansible.builtin.set_fact:
+        kubeconfig_home: "{{ getent_passwd[kubeconfig_user][4] }}"
+
     - name: Create local user .kube configuration directory
       ansible.builtin.file:
-        path: "/home/{{ ansible_user }}/.kube"
+        path: "{{ kubeconfig_home }}/.kube"
         state: directory
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        owner: "{{ kubeconfig_user }}"
+        group: "{{ kubeconfig_user }}"
         mode: '0700'
 
     - name: Copy kubeconfig to user's home directory
       ansible.builtin.copy:
         src: /etc/rancher/k3s/k3s.yaml
-        dest: "/home/{{ ansible_user }}/.kube/config"
+        dest: "{{ kubeconfig_home }}/.kube/config"
         remote_src: true
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        owner: "{{ kubeconfig_user }}"
+        group: "{{ kubeconfig_user }}"
         mode: '0600'
 
     - name: Replace default server IP with localhost in copied config
       ansible.builtin.replace:
-        path: "/home/{{ ansible_user }}/.kube/config"
+        path: "{{ kubeconfig_home }}/.kube/config"
         regexp: '127.0.0.1'
         replace: 'localhost'
 ...

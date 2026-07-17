@@ -4,8 +4,10 @@
   become: true
   vars:
     docker_compose_version: "v2.24.5"
+    # ansible_user only exists when the inventory sets it; fall back to the
+    # login user behind sudo, then to whoever we connected as.
     admin_users:
-      - "{{ ansible_user }}"
+      - "{{ ansible_user | default(ansible_env.SUDO_USER | default(ansible_user_id), true) }}"
   tasks:
     - name: Install prerequisite system packages
       ansible.builtin.package:

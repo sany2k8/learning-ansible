@@ -2,19 +2,29 @@
 - name: Utilities — Tmux and custom config
   hosts: all
   become: true
+  vars:
+    # ansible_user only exists when the inventory sets it; fall back to the
+    # login user behind sudo, then to whoever we connected as.
+    tmux_user: >-
+      {{ ansible_user | default(ansible_env.SUDO_USER | default(ansible_user_id), true) }}
   tasks:
     - name: Install tmux
       ansible.builtin.package:
         name: tmux
         state: present
 
+    - name: Look up home directory of {{ tmux_user }}
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ tmux_user }}"
+
     - name: Deploy basic user config
       ansible.builtin.copy:
         content: |
           set -g mouse on
           set -g history-limit 10000
-        dest: "/home/{{ ansible_user }}/.tmux.conf"
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        dest: "{{ getent_passwd[tmux_user][4] }}/.tmux.conf"
+        owner: "{{ tmux_user }}"
+        group: "{{ tmux_user }}"
         mode: '0644'
 ...

@@ -2,6 +2,11 @@
 - name: Utilities — ZSH Shell environment setup
   hosts: all
   become: true
+  vars:
+    # ansible_user only exists when the inventory sets it; fall back to the
+    # login user behind sudo, then to whoever we connected as.
+    zsh_user: >-
+      {{ ansible_user | default(ansible_env.SUDO_USER | default(ansible_user_id), true) }}
   tasks:
     - name: Install zsh
       ansible.builtin.package:
@@ -10,6 +15,6 @@
 
     - name: Change user shell to zsh
       ansible.builtin.user:
-        name: "{{ ansible_user }}"
+        name: "{{ zsh_user }}"
         shell: /usr/bin/zsh
 ...
