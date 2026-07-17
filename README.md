@@ -160,8 +160,8 @@ ansible-playbook -i inventory/hosts.yml scenarios/setup_docker.yml
 # 2. Run a scenario directly on your local target (e.g. if you cloned the repo onto an AWS EC2 instance)
 ansible-playbook -i "localhost," -c local scenarios/setup_nginx.yml
 
-# 3. Mount an EBS volume (modify device and mount vars inside play first)
-ansible-playbook -i "localhost," -c local scenarios/aws_mount_ebs.yml
+# 3. Run a Kubernetes setup 
+ansible-playbook -i "localhost," -c local scenarios/kubernetes.yml
 
 # 4. Install CloudWatch unified agent
 ansible-playbook -i "localhost," -c local scenarios/aws_cloudwatch_agent.yml
