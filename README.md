@@ -29,12 +29,32 @@ ansible --version
 ansible-playbook --version
 ```
 
-### 2. Set Up Practice VMs (Multipass)
-Installs lightweight Ubuntu virtual machines to act as targets:
-```bash
-# Install Multipass VM manager
-brew install multipass
+### 2. Set Up Practice Targets
 
+Pick the option that matches where you are:
+
+- **On a cloud VM (AWS EC2, GCP, Azure) → use [scenarios/docker-lab](scenarios/docker-lab/README.md).**
+  Multipass cannot work there: a normal instance is itself a VM and does not pass
+  KVM through to guests, so `multipass launch` fails with *"KVM support is not
+  enabled on this machine"*. The docker-lab gives you the same three hosts as
+  systemd containers on the one instance.
+- **On a Mac or Linux workstation with virtualization → Multipass**, below.
+
+#### Option A: Docker containers (works anywhere Docker runs)
+
+```bash
+cd scenarios/docker-lab && ./lab.sh up
+cd ../.. && ansible -i inventory/docker-lab.yml all -m ping
+```
+
+#### Option B: Practice VMs (Multipass)
+Installs lightweight Ubuntu virtual machines to act as targets:
+
+# Install Multipass VM manager
+MacOs: brew install multipass
+Ubuntu: sudo snap install multipass
+
+```bash
 # Spin up learning targets
 multipass launch --name web1
 multipass launch --name web2
@@ -48,6 +68,9 @@ multipass list
 *(Make sure to update the IPs in [hosts.yml](file:///Users/sany/Projects/learning-ansible/inventory/hosts.yml) or [hosts.ini](file:///Users/sany/Projects/learning-ansible/inventory/hosts.ini) if they differ from the defaults!)*
 
 ### 3. Configure SSH Key Authentication
+
+*(Option B only — `./lab.sh up` already does this for the Docker lab.)*
+
 Create SSH keys on your host and copy them to all target VMs:
 ```bash
 # Generate keys if you don't already have one

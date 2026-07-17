@@ -1,0 +1,41 @@
+---
+# Same group layout as hosts.yml, but pointed at the containers from
+# scenarios/docker-lab instead of Multipass VMs.
+#
+#   ansible-playbook -i inventory/docker-lab.yml playbooks/site.yml
+#
+# Connection vars are set per host on purpose: vars declared inline in an
+# inventory file are outranked by playbook group_vars/all.yml (which still
+# says ansible_user: multipass), but inline *host* vars outrank it.
+all:
+  children:
+    web:
+      hosts:
+        web1:
+          ansible_host: 172.20.0.11
+          ansible_user: ansible
+          ansible_ssh_private_key_file: ~/.ssh/ansible_lab
+          ansible_python_interpreter: /usr/bin/python3
+        web2:
+          ansible_host: 172.20.0.12
+          ansible_user: ansible
+          ansible_ssh_private_key_file: ~/.ssh/ansible_lab
+          ansible_python_interpreter: /usr/bin/python3
+    db:
+      hosts:
+        db1:
+          ansible_host: 172.20.0.20
+          ansible_user: ansible
+          ansible_ssh_private_key_file: ~/.ssh/ansible_lab
+          ansible_python_interpreter: /usr/bin/python3
+    staging:
+      hosts:
+        web1:
+        db1:
+    production:
+      hosts:
+        web2:
+    local:
+      hosts:
+        localhost:
+          ansible_connection: local

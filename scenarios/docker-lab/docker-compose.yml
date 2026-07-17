@@ -1,0 +1,51 @@
+---
+# Three systemd containers on a fixed bridge network, standing in for the
+# Multipass VMs. Start with ./lab.sh up (it generates the SSH key first).
+name: ansible-lab
+
+x-node: &node
+  build:
+    context: .
+  image: ansible-lab-node:22.04
+  # systemd needs to manage cgroups, mount things, and load its own units.
+  privileged: true
+  cgroup: host
+  volumes:
+    - /sys/fs/cgroup:/sys/fs/cgroup:rw
+  tmpfs:
+    - /run
+    - /run/lock
+  stop_signal: SIGRTMIN+3
+  stop_grace_period: 10s
+
+services:
+  web1:
+    <<: *node
+    hostname: web1
+    container_name: web1
+    networks:
+      lab:
+        ipv4_address: 172.20.0.11
+
+  web2:
+    <<: *node
+    hostname: web2
+    container_name: web2
+    networks:
+      lab:
+        ipv4_address: 172.20.0.12
+
+  db1:
+    <<: *node
+    hostname: db1
+    container_name: db1
+    networks:
+      lab:
+        ipv4_address: 172.20.0.20
+
+networks:
+  lab:
+    name: ansible-lab
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
