@@ -43,6 +43,8 @@ Pick the option that matches where you are:
 #### Option A: Docker containers (works anywhere Docker runs)
 
 ```bash
+sudo apt update && sudo apt install -y docker.io docker-compose-v2
+sudo usermod -aG docker "$USER" && newgrp docker
 cd scenarios/docker-lab && ./lab.sh up
 cd ../.. && ansible -i inventory/docker-lab.yml all -m ping
 ```
